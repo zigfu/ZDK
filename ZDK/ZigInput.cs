@@ -80,7 +80,29 @@ public class NewUsersFrameEventArgs : EventArgs
 	public List<ZigInputUser> Users { get; private set; }
 }
 
-public interface IZigInputReader
+class ZigDepth {
+    public int xres { get; private set; }
+    public int yres { get; private set; }
+    public ushort[] data;
+    public ZigDepth(int x, int y) {
+        xres = x;
+        yres = y;
+        data = new ushort[x * y];
+    }
+}
+
+class ZigImage {
+    public int xres { get; private set; }
+    public int yres { get; private set; }
+    public byte[] data;
+    public ZigImage(int x, int y) {
+        xres = x;
+        yres = y;
+        data = new byte[x * y * 3];
+    }
+}
+
+interface IZigInputReader
 {
 	// init/update/shutdown
 	void Init();
@@ -90,13 +112,12 @@ public interface IZigInputReader
 	// users & hands
 	event EventHandler<NewUsersFrameEventArgs> NewUsersFrame;
 	
-	// textures
-	Texture2D GetDepth();
-	Texture2D GetImage();
+    // streams
 	bool UpdateDepth { get; set; }
 	bool UpdateImage { get; set; }
 
-    //Texture2D ImageThing { get; }
+    ZigDepth Depth { get; }
+    ZigImage Image { get; }
 }
 
 public class ZigTrackedUser
@@ -116,13 +137,19 @@ public class ZigTrackedUser
 		UserData = userData;
 		notifyListeners("Zig_UpdateUser", this);
 	}
-	
-	void notifyListeners(string msgname, object arg)
-	{
-		foreach (GameObject go in listeners) {
-			go.SendMessage(msgname, arg, SendMessageOptions.DontRequireReceiver);
-		}
-	}
+
+    void notifyListeners(string msgname, object arg) {
+        for (int i = 0; i < listeners.Count; ) {
+            GameObject go = listeners[i];
+            if (go) {
+                go.SendMessage(msgname, arg, SendMessageOptions.DontRequireReceiver);
+                i++;
+            }
+            else {
+                listeners.RemoveAt(i);
+            }
+        }
+    }
 }
 
 public enum ZigInputType {
@@ -211,7 +238,7 @@ public class ZigInput : MonoBehaviour {
 	//-------------------------------------------------------------------------
 	
 	public List<GameObject> listeners = new List<GameObject>();
-    public IZigInputReader reader { get; private set; }
+    IZigInputReader reader;
 	public bool ReaderInited { get; private set; }
 	
 	void Awake() {
@@ -260,32 +287,7 @@ public class ZigInput : MonoBehaviour {
             return reader.GetImage();
         }
     }
-	/*
-    public bool UpdateDepth
-    {
-        get
-        {
-            if (!ReaderInited) return false;
-            return reader.UpdateDepth;
-        }
-        set
-        {
-            if (ReaderInited) reader.UpdateDepth = value;
-        }
-    }
-    public bool UpdateImage
-    {
-        get
-        {
-            if (!ReaderInited) return false;
-            return reader.UpdateImage;
-        }
-        set
-        {
-            if (ReaderInited) reader.UpdateImage = value;
-        }
-    }*/
-    
+	   
     // Update is called once per frame
 	void Update () {
 		if (ReaderInited) {
@@ -314,7 +316,7 @@ public class ZigInput : MonoBehaviour {
 
 	
 	Dictionary<int, ZigTrackedUser> trackedUsers = new Dictionary<int, ZigTrackedUser>();
-	// TODO: return a readonly IDictionary
+	
 	public Dictionary<int, ZigTrackedUser> TrackedUsers { 
 		get {
 			return trackedUsers;

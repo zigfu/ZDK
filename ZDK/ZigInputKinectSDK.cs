@@ -92,13 +92,13 @@ class PreventDoubleInit
     }
 }
 
-public struct NuiContext
+struct NuiContext
 {
     public IntPtr DepthHandle;
     public IntPtr ImageHandle;
 }
 
-public class NuiWrapper
+class NuiWrapper
 {
     public enum NuiSkeletonTrackingState : uint
     {
@@ -343,7 +343,7 @@ public class NuiWrapper
 	public static extern void NuiShutdown();
 }
 
-public class ZigInputKinectSDK : IZigInputReader
+class ZigInputKinectSDK : IZigInputReader
 {
 	NuiWrapper.NuiSkeletonFrame skeletonFrame = new NuiWrapper.NuiSkeletonFrame();
     NuiWrapper.NuiImageFrame depthFrame;
@@ -396,7 +396,7 @@ public class ZigInputKinectSDK : IZigInputReader
         else {
             context = PreventDoubleInit.LoadContext<NuiContext>();
         }
-
+        /*
         // init textures
         factor = 2;
         XRes = 320 / factor;
@@ -415,7 +415,7 @@ public class ZigInputKinectSDK : IZigInputReader
         ImageXRes = 640; // / factor;
         ImageYRes = 480; // / factor;
         Image = new Texture2D(640, 480);
-        rawImageMap = new Color32[ImageXRes * ImageYRes];
+        rawImageMap = new Color32[ImageXRes * ImageYRes];*/
 	}
 	
 	public void Update() 
@@ -530,7 +530,6 @@ public class ZigInputKinectSDK : IZigInputReader
 	
 	void ProcessNewSkeletonFrame() {
 		NuiWrapper.NuiSkeletonData skel;
-		
 		// foreach user
 		List<ZigInputUser> users = new List<ZigInputUser>();
 		foreach (var skeleton in skeletonFrame.SkeletonData) {
@@ -538,7 +537,7 @@ public class ZigInputKinectSDK : IZigInputReader
 			if (skeleton.TrackingState == NuiWrapper.NuiSkeletonTrackingState.NotTracked) {
 				continue;
 			}
-	
+
 			// skeleton data
 			List<ZigInputJoint> joints = new List<ZigInputJoint>();
 			bool tracked = skeleton.TrackingState == NuiWrapper.NuiSkeletonTrackingState.Tracked;

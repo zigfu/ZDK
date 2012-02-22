@@ -3,7 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-public class ZigInputWebplayer : IZigInputReader
+class ZigInputWebplayer : IZigInputReader
 {
     const int MaxDepth = 10000; // hard coded for now
     float[] depthHistogramMap;

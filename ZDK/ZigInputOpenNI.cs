@@ -5,7 +5,8 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using OpenNI;
 
-public class ZigInputOpenNI : IZigInputReader {
+class ZigInputOpenNI : IZigInputReader
+{
 	//-------------------------------------------------------------------------
 	// IZigInputReader interface
 	//-------------------------------------------------------------------------
@@ -44,8 +45,12 @@ public class ZigInputOpenNI : IZigInputReader {
         this.Users.LostUser += new EventHandler<UserLostEventArgs>(userGenerator_LostUser);
         this.Users.PoseDetectionCapability.PoseDetected += new EventHandler<PoseDetectedEventArgs>(poseDetectionCapability_PoseDetected);
 		this.Users.SkeletonCapability.CalibrationComplete += new EventHandler<CalibrationProgressEventArgs>(skeletonCapbility_CalibrationComplete);
-		
+
+        this.Depth = new ZigDepth(Depthmap.GetMetaData().XRes, Depthmap.GetMetaData().YRes);
+        this.Image = new ZigImage(Imagemap.GetMetaData().XRes, Imagemap.GetMetaData().YRes);
+
 		// init textures
+        /*
         factor = 1;
         XRes = Depthmap.GetMetaData().XRes / factor;
 		YRes = Depthmap.GetMetaData().YRes / factor;
@@ -65,7 +70,7 @@ public class ZigInputOpenNI : IZigInputReader {
         ImageYRes = Imagemap.GetMetaData().YRes;
         Image = new Texture2D(ImageXRes, ImageYRes);
         rawImageMap = new byte[ImageXRes * ImageYRes * 3];
-        imageMapPixels = new Color32[ImageXRes * ImageYRes];
+        imageMapPixels = new Color32[ImageXRes * ImageYRes];*/
 	}
 	
 	public void Update()
@@ -105,11 +110,9 @@ public class ZigInputOpenNI : IZigInputReader {
 			NewUsersFrame.Invoke(this, new NewUsersFrameEventArgs(users));
 		}
 	}
-	
-	Texture2D Depth;
-	Texture2D Image;
-    public Texture2D GetDepth() { return Depth; }
-    public Texture2D GetImage() { return Image; }
+
+    public ZigDepth Depth { get; private set; }
+    public ZigImage Image { get; private set; }
 	public bool UpdateDepth { get; set; }
 	public bool UpdateImage { get; set; }
 	
