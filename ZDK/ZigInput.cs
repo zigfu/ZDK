@@ -80,7 +80,7 @@ public class NewUsersFrameEventArgs : EventArgs
 	public List<ZigInputUser> Users { get; private set; }
 }
 
-class ZigDepth {
+public class ZigDepth {
     public int xres { get; private set; }
     public int yres { get; private set; }
     public short[] data;
@@ -91,7 +91,8 @@ class ZigDepth {
     }
 }
 
-class ZigImage {
+public class ZigImage
+{
     public int xres { get; private set; }
     public int yres { get; private set; }
     public Color32[] data;
@@ -232,6 +233,10 @@ public class ZigInput : MonoBehaviour {
 			return instance;
 		}
 	}
+
+    public static ZigDepth Depth { get; private set; }
+    public static ZigImage Image { get; private set; }
+
 	
 	//-------------------------------------------------------------------------
 	// MonoBehaviour logic
@@ -266,6 +271,8 @@ public class ZigInput : MonoBehaviour {
 		
 		try {
 			reader.Init();
+            ZigInput.Depth = reader.Depth;
+            ZigInput.Image = reader.Image;
 			ReaderInited = true;
 		} catch (Exception ex) {
 			Debug.LogError(ex.Message);
