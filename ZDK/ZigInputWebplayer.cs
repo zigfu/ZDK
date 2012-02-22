@@ -48,6 +48,11 @@ class ZigInputWebplayer : IZigInputReader
     {
         byte[] imageBytes = Convert.FromBase64String(e.JsonData);
         Color32[] output = Image.data;
+        for (int i = 0; i < output.Length; i++) {
+            output[i].r = imageBytes[i * 3];
+            output[i].g = imageBytes[i * 3 + 1];
+            output[i].b = imageBytes[i * 3 + 2];
+        }
 
     }
 
