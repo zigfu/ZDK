@@ -301,7 +301,7 @@ public class ZigInput : MonoBehaviour {
 		}
 
 		foreach (ZigTrackedUser user in TrackedUsers.Values) {
-			listener.SendMessage("Zig_NewUser", user);
+            listener.SendMessage("Zig_NewUser", user, SendMessageOptions.DontRequireReceiver);
 		}
 	}
 
