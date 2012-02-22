@@ -83,11 +83,11 @@ public class NewUsersFrameEventArgs : EventArgs
 class ZigDepth {
     public int xres { get; private set; }
     public int yres { get; private set; }
-    public ushort[] data;
+    public short[] data;
     public ZigDepth(int x, int y) {
         xres = x;
         yres = y;
-        data = new ushort[x * y];
+        data = new short[x * y];
     }
 }
 
@@ -271,23 +271,7 @@ public class ZigInput : MonoBehaviour {
 			Debug.LogError(ex.Message);
 		}
 	}
-    public Texture2D Depth
-    {
-        get
-        {
-            if (!ReaderInited) return null;
-            return reader.GetDepth();
-        }
-    }
-    public Texture2D Image
-    {
-        get
-        {
-            if (!ReaderInited) return null;
-            return reader.GetImage();
-        }
-    }
-	   
+
     // Update is called once per frame
 	void Update () {
 		if (ReaderInited) {
