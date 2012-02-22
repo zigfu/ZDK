@@ -350,17 +350,6 @@ class ZigInputKinectSDK : IZigInputReader
     NuiWrapper.NuiImageFrame imageFrame;
     NuiContext context;
 
-    short[] rawDepthMap;
-    float[] depthHistogramMap;
-    Color32[] depthMapPixels;
-    int XRes;
-    int YRes;
-    int factor;
-
-    int ImageXRes;
-    int ImageYRes;
-    Color32[] rawImageMap;
-
 	//-------------------------------------------------------------------------
 	// IZigInputReader interface
 	//-------------------------------------------------------------------------
@@ -396,26 +385,9 @@ class ZigInputKinectSDK : IZigInputReader
         else {
             context = PreventDoubleInit.LoadContext<NuiContext>();
         }
-        /*
-        // init textures
-        factor = 2;
-        XRes = 320 / factor;
-        YRes = 240 / factor;
-        Depth = new Texture2D(XRes, YRes);
 
-        // depthmap data
-        rawDepthMap = new short[XRes * YRes];
-        depthMapPixels = new Color32[(XRes / factor) * (YRes / factor)];
-
-        // histogram stuff
-        int maxDepth = 4000;
-        depthHistogramMap = new float[maxDepth];
-
-        // image stuff
-        ImageXRes = 640; // / factor;
-        ImageYRes = 480; // / factor;
-        Image = new Texture2D(640, 480);
-        rawImageMap = new Color32[ImageXRes * ImageYRes];*/
+        Image = new ZigImage(640, 480);
+        Depth = new ZigDepth(320, 240);
 	}
 	
 	public void Update() 
@@ -433,12 +405,8 @@ class ZigInputKinectSDK : IZigInputReader
 
                 // lock & copy the depth data
                 NuiWrapper.NuiLockedRect rect = depthTexture.LockRect();
-                Marshal.Copy(rect.ActualDataFinally, rawDepthMap, 0, rawDepthMap.Length);
+                Marshal.Copy(rect.ActualDataFinally, Depth.data, 0, Depth.data.Length);
                 depthTexture.UnlockRect();
-
-                // process it
-                UpdateHistogram();
-                UpdateDepthmapTexture();
 
                 // release current frame
                 NuiWrapper.NuiImageStreamReleaseFrame(context.DepthHandle, ref depthFrame);
@@ -450,19 +418,16 @@ class ZigInputKinectSDK : IZigInputReader
             if (0 == NuiWrapper.NuiImageStreamGetNextFrame(context.ImageHandle, 0, out pImageFrame)) {
                 imageFrame = (NuiWrapper.NuiImageFrame)Marshal.PtrToStructure(pImageFrame, typeof(NuiWrapper.NuiImageFrame));
                 NuiWrapper.INuiFrameTexture imageTexture = new NuiWrapper.INuiFrameTexture(imageFrame.FrameTexture);
-
+                
                 NuiWrapper.NuiLockedRect rect = imageTexture.LockRect();
                 NuiWrapper.ColorBuffer colors = (NuiWrapper.ColorBuffer)Marshal.PtrToStructure(rect.ActualDataFinally, typeof(NuiWrapper.ColorBuffer));
-                for (int i = 0; i < rawImageMap.Length; i++) {
-                    rawImageMap[i].r = colors.data[i].r;
-                    rawImageMap[i].g = colors.data[i].g;
-                    rawImageMap[i].b = colors.data[i].b;
-                    rawImageMap[i].a = 255;
+                for (int i = 0; i < Image.data.Length; i++) {
+                    Image.data[i].r = colors.data[i].r;
+                    Image.data[i].g = colors.data[i].g;
+                    Image.data[i].b = colors.data[i].b;
+                    Image.data[i].a = 255;
                 }
                 imageTexture.UnlockRect();
-                Image.SetPixels32(rawImageMap);
-                Image.Apply();
-
                 NuiWrapper.NuiImageStreamReleaseFrame(context.ImageHandle, ref imageFrame);
             }
         }
@@ -484,12 +449,8 @@ class ZigInputKinectSDK : IZigInputReader
 		}
 	}
 
-    public Texture2D ImageThing { get; set; }
-    Texture2D Image;
-	Texture2D Depth;
-    public Texture2D GetImage() { return Image; }
-    public Texture2D GetDepth() { return Depth; }
-	
+    public ZigDepth Depth { get; private set; }
+    public ZigImage Image { get; private set; }	
 	public bool UpdateDepth { get; set; }
 	public bool UpdateImage { get; set; }
 	
@@ -795,56 +756,5 @@ class ZigInputKinectSDK : IZigInputReader
 		
         return result.ToQuaternion();
 	}
-
-    void UpdateHistogram() {
-        int i, numOfPoints = 0;
-
-        Array.Clear(depthHistogramMap, 0, depthHistogramMap.Length);
-
-        short curr;
-        for (i = 0; i < rawDepthMap.Length; i++) {
-            // only calculate for valid depth
-            curr = (short)(rawDepthMap[i] >> 3);
-            if (curr != 0) {
-                depthHistogramMap[curr]++;
-                numOfPoints++;
-            }
-        }
-
-        if (numOfPoints > 0) {
-            for (i = 1; i < depthHistogramMap.Length; i++) {
-                depthHistogramMap[i] += depthHistogramMap[i - 1];
-            }
-            for (i = 0; i < depthHistogramMap.Length; i++) {
-                depthHistogramMap[i] = (1.0f - (depthHistogramMap[i] / numOfPoints)) * 255;
-            }
-        }
-        depthHistogramMap[0] = 0;
-    }
-
-    void UpdateDepthmapTexture() {
-        // flip the depthmap as we create the texture
-        int YScaled = YRes / factor;
-        int XScaled = XRes / factor;
-        int i = XScaled * YScaled - XScaled;
-        int depthIndex = 0;
-        for (int y = 0; y < YScaled; ++y, i -= XScaled) {
-            for (int x = 0; x < XScaled; ++x, depthIndex += factor) {
-                short pixel = (short)(rawDepthMap[depthIndex] >> 3);
-                if (pixel == 0) {
-                    depthMapPixels[i + x] = Color.clear;
-                }
-                else {
-                    Color32 c = new Color32((byte)depthHistogramMap[pixel], (byte)depthHistogramMap[pixel], 0, 255);
-                    depthMapPixels[i + x] = c;
-                }
-            }
-            // Skip lines
-            depthIndex += (factor - 1) * XRes;
-        }
-
-        Depth.SetPixels32(depthMapPixels);
-        Depth.Apply();
-    }
 }
 

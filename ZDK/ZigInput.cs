@@ -94,11 +94,11 @@ class ZigDepth {
 class ZigImage {
     public int xres { get; private set; }
     public int yres { get; private set; }
-    public byte[] data;
+    public Color32[] data;
     public ZigImage(int x, int y) {
         xres = x;
         yres = y;
-        data = new byte[x * y * 3];
+        data = new Color32[x * y];
     }
 }
 
