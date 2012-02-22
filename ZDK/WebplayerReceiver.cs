@@ -9,6 +9,14 @@ class NewDataEventArgs : EventArgs
     public NewDataEventArgs(string jsonData) { JsonData = jsonData; }
 }
 
+class PluginSettingsEventArgs : EventArgs
+{
+    public int ImageMapX;
+    public int ImageMapY;
+    public int DepthMapX;
+    public int DepthMapY;
+}
+
 class WebplayerReceiver : MonoBehaviour
 {
     static bool loaded = false;
@@ -50,8 +58,14 @@ class WebplayerReceiver : MonoBehaviour
 				plugin = document.getElementById('zigPluginObject');
 			}
 			addHandler(plugin, 'NewFrame', webplayerOnNewData);
-            //TODO: something better
-            //plugin.requestStreams(true, true, true);
+            //TODO: finish support on the ZigInput side
+			//for (webplayerId in WebplayerIds) {
+			//	var unity = unityObject.getObjectById(webplayerId);
+			//	if (null == unity) continue;
+            //    unity.SendMessage(WebplayerIds[webplayerId], 'PluginSettings', JSON.stringify(
+            //                        {imageMapResolution:plugin.imageMapResolution,
+            //                         depthMapResolution:plugin.depthMapResolution,}));
+            //}
 		}
 
 		CachedZigObject = null;
@@ -89,7 +103,7 @@ class WebplayerReceiver : MonoBehaviour
         function setStreams(depth, image) {
             streamsRequested = { depth : depth, image : image };
             var zig = GetZigObject();
-            if (zig) zig.requestStreams(depth, image, true); // we're a web-player, say so
+            if (zig) zig.requestStreams(depth, image, false);
         }
 
         function pollPrezig(prezig, playerId, objectName) {
@@ -108,6 +122,7 @@ class WebplayerReceiver : MonoBehaviour
             var preZig = GetUnreadyZigObject();
             if (preZig !== null) {
                 console.log('got prezig, polling till valid!');
+                sendLoaded(playerId, objectName);
                 setInterval(pollPrezig, 100, prezig, playerId, objectName);
                 return;
             }
@@ -205,4 +220,27 @@ class WebplayerReceiver : MonoBehaviour
             WebplayerLogger.Log(ex.ToString());
         }
     }
+    //public event EventHandler<PluginSettingsEventArgs> PluginSettingsEvent;
+    //void PluginSettings(string param)
+    //{
+    //    Hashtable settings = (Hashtable)JSON.JsonDecode(param);
+    //    Hashtable image = (Hashtable)settings["imageMapSettings"];
+    //    Hashtable depth = (Hashtable)settings["depthMapSettings"];
+        
+    //    try {
+    //        if (null != PluginSettingsEvent) {
+    //            PluginSettingsEvent.Invoke(this, new PluginSettingsEventArgs() {
+    //                ImageMapX = (int)(double)image["width"],
+    //                ImageMapY = (int)(double)image["height"],
+    //                DepthMapX = (int)(double)depth["width"],
+    //                DepthMapY = (int)(double)depth["height"],
+    //            });
+    //        }
+    //    }
+    //    catch (System.Exception ex) {
+    //        // the logger will show exceptions on screen, useful for 
+    //        // webplayer debugging
+    //        WebplayerLogger.Log(ex.ToString());
+    //    }
+    //}
 }

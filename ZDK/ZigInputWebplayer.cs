@@ -5,38 +5,29 @@ using System.Collections.Generic;
 
 class ZigInputWebplayer : IZigInputReader
 {
-    const int MaxDepth = 10000; // hard coded for now
-    float[] depthHistogramMap;
-    Color32[] depthMapPixels;
-    ushort[] depthMapData;
-    Color32[] imageMapPixels;
+
     int XRes;
     int YRes;
-    int factor = 1;
 	// init/update/shutdown
 	public void Init()
 	{
 		WebplayerReceiver receiver = WebplayerReceiver.Create();
 		receiver.NewDataEvent += HandleReceiverNewDataEvent;
-        XRes = 160;
+        XRes = 160; // TODO: make better - the plugin exports the depth/image map resolutions (partially done in WebplayerReceiver side)
         YRes = 120;
-        Depth = new Texture2D(XRes / factor, YRes / factor);
-        depthMapPixels = new Color32[(XRes / factor) * (YRes / factor)];
-        depthMapData = new ushort[(XRes / factor) * (YRes / factor)];
-        depthHistogramMap = new float[MaxDepth];
-        Image = new Texture2D(XRes / factor, YRes / factor);
-        imageMapPixels = new Color32[(XRes / factor) * (YRes / factor)];
         receiver.NewDepthEvent += HandleNewDepth;
         receiver.NewImageEvent += HandleNewImage;
+        this.Depth = new ZigDepth(XRes, YRes);
+        this.Image = new ZigImage(XRes, YRes);
 	}
-
-	public void Update()
-	{
-	}
-	
-	public void Shutdown()
-	{
-	}
+    public ZigDepth Depth { get; private set; }
+    public ZigImage Image { get; private set; }
+    public void Shutdown() 
+    { 
+    }
+    public void Update() 
+    { 
+    }
 	
 	public event EventHandler<NewUsersFrameEventArgs> NewUsersFrame;
 	protected void OnNewUsersFrame(List<ZigInputUser> users) {
@@ -46,74 +37,19 @@ class ZigInputWebplayer : IZigInputReader
 	}
     private void HandleNewDepth(object sender, NewDataEventArgs e)
     {
-        string s = e.JsonData;
-        int numOfPoints = 0;
-        int outIndex = 0;
-        Array.Clear(depthHistogramMap, 0, depthHistogramMap.Length);
-        int i = 0;
-        // calc histogram, do conversion to depthmap
-        for(i = 0; i < s.Length; i+=2) {
-            ushort pixel = (ushort)((s[i] & (~1)) | (s[i + 1] & 0x7f));
-            depthMapData[outIndex] = pixel;
-            if (pixel != 0) {
-                depthHistogramMap[pixel]++;
-                numOfPoints++;
-            }
-            outIndex++;
+        byte[] depthBytes = Convert.FromBase64String(e.JsonData);
+        ushort[] output = Depth.data;
+        for (int i = 0; i < output.Length; i++) {
+            output[i] =(ushort)( depthBytes[i * 2] + (depthBytes[i * 2 + 1] << 8));
         }
-        if (numOfPoints > 0) {
-            for (i = 1; i < depthHistogramMap.Length; i++) {
-                depthHistogramMap[i] += depthHistogramMap[i - 1];
-            }
-            for (i = 0; i < depthHistogramMap.Length; i++) {
-                depthHistogramMap[i] = (1.0f - (depthHistogramMap[i] / numOfPoints)) * 255;
-            }
-        }
-        depthHistogramMap[0] = 0;
-        // flip the depthmap as we create the texture
-        int YScaled = YRes / factor;
-        int XScaled = XRes / factor;
-        i = XScaled * YScaled - XScaled;
-        int depthIndex = 0;
-        for (int y = 0; y < YScaled; ++y, i -= XScaled) {
-            for (int x = 0; x < XScaled; ++x, depthIndex += factor) {
-                ushort pixel = depthMapData[depthIndex];
-                if (pixel == 0) {
-                    depthMapPixels[i + x] = Color.clear;
-                }
-                else {
-                    Color32 c = new Color32((byte)depthHistogramMap[pixel], (byte)depthHistogramMap[pixel], 0, 255);
-                    depthMapPixels[i + x] = c;
-                }
-            }
-            // Skip lines
-            depthIndex += (factor - 1) * XRes;
-        }
-
-        Depth.SetPixels32(depthMapPixels);
-        Depth.Apply();
     }
 
     private void HandleNewImage(object sender, NewDataEventArgs e)
     {
-        string s = e.JsonData;
-        int outIndex = 0;
-        for (int i = 0; i < s.Length; i += 3, outIndex++) {
-            imageMapPixels[outIndex].r = (byte)(s[i] & (~1));
-            imageMapPixels[outIndex].g = (byte)(s[i + 1] & (~1));
-            imageMapPixels[outIndex].b = (byte)(s[i + 2] & (~1));
-        }
+        byte[] imageBytes = Convert.FromBase64String(e.JsonData);
+        Color32[] output = Image.data;
 
-        Image.SetPixels32(imageMapPixels);
-        Image.Apply();
     }
-
-
-    // textures
-    Texture2D Image;
-    Texture2D Depth;
-    public Texture2D GetImage() { return Image; }
-    public Texture2D GetDepth() { return Depth; }
 
     bool updateDepth = false;
     public bool UpdateDepth {
