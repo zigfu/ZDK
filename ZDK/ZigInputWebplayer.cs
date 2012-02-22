@@ -40,7 +40,7 @@ class ZigInputWebplayer : IZigInputReader
         byte[] depthBytes = Convert.FromBase64String(e.JsonData);
         short[] output = Depth.data;
         for (int i = 0; i < output.Length; i++) {
-            output[i] =(short)( depthBytes[i * 2] + (depthBytes[i * 2 + 1] << 8));
+            output[i] = (short)(depthBytes[i * 2] + (depthBytes[i * 2 + 1] << 8));
         }
     }
 
