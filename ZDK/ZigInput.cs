@@ -123,19 +123,38 @@ interface IZigInputReader
 
 public class ZigTrackedUser
 {
-	public ZigInputUser UserData {get; private set;}
+	//public ZigInputUser UserData {get; private set;}
 	List<GameObject> listeners = new List<GameObject>();
-	
+
+    public int Id { get; private set; }
+    public bool PositionTracked { get; private set; }
+    public Vector3 Position { get; private set; }
+    public bool SkeletonTracked { get; private set; }
+    public List<ZigInputJoint> Skeleton { get; private set; }
+
 	public ZigTrackedUser(ZigInputUser userData) {
-		UserData = userData;
+		Update(userData);
 	}
 		
 	public void AddListener(GameObject listener) {
 		listeners.Add(listener);
 	}
+
+    public void RemoveListener(GameObject listener) {
+        if (null == listener) {
+            listeners.Clear();
+        }
+        else {
+            listeners.Remove(listener);
+        }
+    }
 	
 	public void Update(ZigInputUser userData) {
-		UserData = userData;
+		Id = userData.Id;
+        PositionTracked = true;
+        Position = userData.CenterOfMass;
+        SkeletonTracked = userData.Tracked;
+        Skeleton = userData.SkeletonData;
 		notifyListeners("Zig_UpdateUser", this);
 	}
 
@@ -301,7 +320,7 @@ public class ZigInput : MonoBehaviour {
 		}
 
 		foreach (ZigTrackedUser user in TrackedUsers.Values) {
-            listener.SendMessage("Zig_NewUser", user, SendMessageOptions.DontRequireReceiver);
+            listener.SendMessage("Zig_UserFound", user, SendMessageOptions.DontRequireReceiver);
 		}
 	}
 
@@ -324,7 +343,7 @@ public class ZigInput : MonoBehaviour {
 		foreach (int id in idsToRemove) {
 			ZigTrackedUser user = trackedUsers[id];
 			trackedUsers.Remove(id);
-			notifyListeners("Zig_LostUser", user);
+			notifyListeners("Zig_UserLost", user);
 		}
 			
 		// add new & update existing users
@@ -332,7 +351,7 @@ public class ZigInput : MonoBehaviour {
 			if (!trackedUsers.ContainsKey(user.Id)) {
 				ZigTrackedUser trackedUser = new ZigTrackedUser(user);
 				trackedUsers.Add(user.Id, trackedUser);
-				notifyListeners("Zig_NewUser", user);
+                notifyListeners("Zig_UserFound", trackedUser);
 			} else {
 				trackedUsers[user.Id].Update(user);
 			}
