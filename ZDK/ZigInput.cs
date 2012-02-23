@@ -48,7 +48,10 @@ public class ZigInputJoint
 	public bool GoodRotation;
 	
 	public ZigInputJoint(ZigJointId id) :
-		this(id, Vector3.zero, Quaternion.identity) {}
+		this(id, Vector3.zero, Quaternion.identity) {
+            GoodPosition = false;
+            GoodRotation = false;
+    }
 	
 	public ZigInputJoint(ZigJointId id, Vector3 position, Quaternion rotation) {
 		Id = id;
@@ -123,21 +126,26 @@ interface IZigInputReader
 
 public class ZigTrackedUser
 {
-	//public ZigInputUser UserData {get; private set;}
 	List<GameObject> listeners = new List<GameObject>();
 
     public int Id { get; private set; }
     public bool PositionTracked { get; private set; }
     public Vector3 Position { get; private set; }
     public bool SkeletonTracked { get; private set; }
-    public List<ZigInputJoint> Skeleton { get; private set; }
+    public ZigInputJoint[] Skeleton { get; private set; }
 
 	public ZigTrackedUser(ZigInputUser userData) {
+        Skeleton = new ZigInputJoint[Enum.GetValues(typeof(ZigJointId)).Length];
+        Debug.Log("Skeleton has " + Enum.GetValues(typeof(ZigJointId)).Length);
+        for (int i=0; i<Skeleton.Length; i++) {
+            Skeleton[i] = new ZigInputJoint((ZigJointId)i);
+        }
 		Update(userData);
 	}
 		
 	public void AddListener(GameObject listener) {
 		listeners.Add(listener);
+        listener.SendMessage("Zig_Attach", this, SendMessageOptions.DontRequireReceiver);
 	}
 
     public void RemoveListener(GameObject listener) {
@@ -146,6 +154,7 @@ public class ZigTrackedUser
         }
         else {
             listeners.Remove(listener);
+            listener.SendMessage("Zig_Detach", this, SendMessageOptions.DontRequireReceiver);
         }
     }
 	
@@ -154,7 +163,9 @@ public class ZigTrackedUser
         PositionTracked = true;
         Position = userData.CenterOfMass;
         SkeletonTracked = userData.Tracked;
-        Skeleton = userData.SkeletonData;
+        foreach (ZigInputJoint j in userData.SkeletonData) {
+            Skeleton[(int)j.Id] = j;
+        }
 		notifyListeners("Zig_UpdateUser", this);
 	}
 
