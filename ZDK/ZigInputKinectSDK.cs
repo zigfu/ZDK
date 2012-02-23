@@ -565,6 +565,9 @@ class ZigInputKinectSDK : IZigInputReader
 		{
 			Vector3 worldY = new Vector3(col1.x, col1.y, -col1.z);
             Vector3 worldZ = new Vector3(-col2.x, -col2.y, col2.z);
+            if (worldZ == Vector3.zero) {
+                return Quaternion.identity;
+            }
 			return Quaternion.LookRotation(worldZ, worldY);
 		}
 	}		
