@@ -136,7 +136,6 @@ public class ZigTrackedUser
 
 	public ZigTrackedUser(ZigInputUser userData) {
         Skeleton = new ZigInputJoint[Enum.GetValues(typeof(ZigJointId)).Length];
-        Debug.Log("Skeleton has " + Enum.GetValues(typeof(ZigJointId)).Length);
         for (int i=0; i<Skeleton.Length; i++) {
             Skeleton[i] = new ZigInputJoint((ZigJointId)i);
         }
