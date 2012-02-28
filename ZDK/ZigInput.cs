@@ -106,6 +106,19 @@ public class ZigImage
     }
 }
 
+public class ZigLabelMap
+{
+    public int xres { get; private set; }
+    public int yres { get; private set; }
+    public short[] data;
+    public ZigLabelMap(int x, int y)
+    {
+        xres = x;
+        yres = y;
+        data = new short[x * y];
+    }
+}
+
 interface IZigInputReader
 {
 	// init/update/shutdown
@@ -119,9 +132,11 @@ interface IZigInputReader
     // streams
 	bool UpdateDepth { get; set; }
 	bool UpdateImage { get; set; }
+    bool UpdateLabelMap { get; set; }
 
     ZigDepth Depth { get; }
     ZigImage Image { get; }
+    ZigLabelMap LabelMap { get; }
 }
 
 public class ZigTrackedUser
@@ -243,7 +258,8 @@ public class ZigInput : MonoBehaviour {
 		
 	public static bool UpdateDepth;
 	public static bool UpdateImage;
-	
+    public static bool UpdateLabelMap;
+
 	public static ZigInputType InputType = ZigInputType.KinectSDK;
 	static ZigInput instance;
 	public static ZigInput Instance
@@ -265,7 +281,7 @@ public class ZigInput : MonoBehaviour {
 
     public static ZigDepth Depth { get; private set; }
     public static ZigImage Image { get; private set; }
-
+    public static ZigLabelMap LabelMap { get; private set; }
 	
 	//-------------------------------------------------------------------------
 	// MonoBehaviour logic
@@ -297,11 +313,13 @@ public class ZigInput : MonoBehaviour {
 		reader.NewUsersFrame += HandleReaderNewUsersFrame;
 		reader.UpdateDepth = ZigInput.UpdateDepth;
         reader.UpdateImage = ZigInput.UpdateImage;
+        reader.UpdateLabelMap = ZigInput.UpdateLabelMap;
 		
 		try {
 			reader.Init();
             ZigInput.Depth = reader.Depth;
             ZigInput.Image = reader.Image;
+            ZigInput.LabelMap = reader.LabelMap;
 			ReaderInited = true;
 		} catch (Exception ex) {
 			Debug.LogError(ex.Message);

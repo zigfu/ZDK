@@ -37,6 +37,7 @@ class ZigInputOpenNI : IZigInputReader
 		
 		this.Depthmap = OpenNode(NodeType.Depth) as DepthGenerator;
 		this.Imagemap = OpenNode(NodeType.Image) as ImageGenerator;
+    
 		this.Users = OpenNode(NodeType.User) as UserGenerator;
 		this.Hands = OpenNode(NodeType.Hands) as HandsGenerator;
 		this.Gestures = OpenNode(NodeType.Gesture) as GestureGenerator;
@@ -50,10 +51,12 @@ class ZigInputOpenNI : IZigInputReader
         this.Users.LostUser += new EventHandler<UserLostEventArgs>(userGenerator_LostUser);
         this.Users.PoseDetectionCapability.PoseDetected += new EventHandler<PoseDetectedEventArgs>(poseDetectionCapability_PoseDetected);
 		this.Users.SkeletonCapability.CalibrationComplete += new EventHandler<CalibrationProgressEventArgs>(skeletonCapbility_CalibrationComplete);
+        
+        
 
         this.Depth = new ZigDepth(Depthmap.GetMetaData().XRes, Depthmap.GetMetaData().YRes);
         this.Image = new ZigImage(Imagemap.GetMetaData().XRes, Imagemap.GetMetaData().YRes);
-
+        this.LabelMap = new ZigLabelMap(Depth.xres, Depth.yres);
         rawImageMap = new byte[Image.xres * Image.yres * 3];
 	}
 	
@@ -77,6 +80,10 @@ class ZigInputOpenNI : IZigInputReader
 			lastImageFrameId = Imagemap.FrameID;
 			ProcessNewImageFrame();
 		}
+        if (lastLabelMapFrameId != Users.FrameID) {
+			lastLabelMapFrameId = Users.FrameID;
+			ProcessNewLabelMapFrame();
+		}
 	}
 	
 	public void Shutdown()
@@ -97,9 +104,12 @@ class ZigInputOpenNI : IZigInputReader
 
     public ZigDepth Depth { get; private set; }
     public ZigImage Image { get; private set; }
+    public ZigLabelMap LabelMap { get; private set; }
+
 	public bool UpdateDepth { get; set; }
 	public bool UpdateImage { get; set; }
-	
+    public bool UpdateLabelMap { get; set; }
+
 	//-------------------------------------------------------------------------
 	// Internal stuff
 	//-------------------------------------------------------------------------
@@ -125,6 +135,7 @@ class ZigInputOpenNI : IZigInputReader
 
 	int lastDepthFrameId;
 	int lastImageFrameId;
+    int lastLabelMapFrameId;
 	
     // Tries to get an existing node, or opening a new one
     // if we need to
@@ -237,7 +248,13 @@ class ZigInputOpenNI : IZigInputReader
 		
 		OnNewUsersFrame(users);
 	}
-	
+	private void ProcessNewLabelMapFrame() {
+        if (UpdateLabelMap)
+        {
+            SceneMetaData sceneMD = Users.GetUserPixels(0);
+            Marshal.Copy(sceneMD.LabelMapPtr, LabelMap.data, 0, LabelMap.xres * LabelMap.yres);
+        }
+    }
 	private void ProcessNewImageFrame()	{
         if (UpdateImage) {
             Marshal.Copy(Imagemap.ImageMapPtr, rawImageMap, 0, rawImageMap.Length);
