@@ -15,11 +15,14 @@ class PluginSettingsEventArgs : EventArgs
     public int ImageMapY;
     public int DepthMapX;
     public int DepthMapY;
+    public int LabelMapX;
+    public int LabelMapY;
 }
 
 class WebplayerReceiver : MonoBehaviour
 {
     static bool loaded = false;
+    static bool earlyUpdateLabelMap = false;
     static bool earlyUpdateDepth = false;
     static bool earlyUpdateImage = false;
     const string jsToInject = @"
@@ -147,14 +150,15 @@ class WebplayerReceiver : MonoBehaviour
 	}
 	";
 
-    public static void SetStreamsToUpdate(bool updateDepth, bool updateImage)
+    public static void SetStreamsToUpdate(bool updateDepth, bool updateImage, bool updateLabelMap)
     {
         if (!loaded) {
             earlyUpdateImage = updateImage;
             earlyUpdateDepth = updateDepth;
+            earlyUpdateLabelMap = updateLabelMap;
         }
         else {
-            Application.ExternalEval(string.Format("setStreams({0}, {1})", updateDepth.ToString().ToLower(), updateImage.ToString().ToLower()));
+            Application.ExternalEval(string.Format("setStreams({0}, {1}, {2})", updateDepth.ToString().ToLower(), updateImage.ToString().ToLower(), updateLabelMap.ToString().ToLower()));
         }
     }
 
@@ -172,7 +176,7 @@ class WebplayerReceiver : MonoBehaviour
     void DoneLoading()
     {
         loaded = true;
-        SetStreamsToUpdate(earlyUpdateDepth, earlyUpdateImage);
+        SetStreamsToUpdate(earlyUpdateDepth, earlyUpdateImage, earlyUpdateLabelMap);
     }
     public event EventHandler<NewDataEventArgs> NewDepthEvent;
     void NewDepth(string param)
@@ -188,6 +192,28 @@ class WebplayerReceiver : MonoBehaviour
             WebplayerLogger.Log(ex.ToString());
         }
     }
+
+
+    public event EventHandler<NewDataEventArgs> NewLabelMapEvent;
+    void NewLabelMap(string param)
+    {
+        try
+        {
+            if (null != NewLabelMapEvent)
+            {
+                NewLabelMapEvent.Invoke(this, new NewDataEventArgs(param));
+            }
+        }
+        catch (System.Exception ex)
+        {
+            // the logger will show exceptions on screen, useful for 
+            // webplayer debugging
+            WebplayerLogger.Log(ex.ToString());
+        }
+    }
+
+
+
 
     public event EventHandler<NewDataEventArgs> NewImageEvent;
     void NewImage(string param)

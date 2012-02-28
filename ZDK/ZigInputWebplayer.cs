@@ -17,11 +17,15 @@ class ZigInputWebplayer : IZigInputReader
         YRes = 120;
         receiver.NewDepthEvent += HandleNewDepth;
         receiver.NewImageEvent += HandleNewImage;
+        receiver.NewLabelMapEvent += HandleNewLabelMap;
         this.Depth = new ZigDepth(XRes, YRes);
         this.Image = new ZigImage(XRes, YRes);
-	}
+        this.LabelMap = new ZigLabelMap(XRes, YRes);
+    }
     public ZigDepth Depth { get; private set; }
     public ZigImage Image { get; private set; }
+    public ZigLabelMap LabelMap { get; private set; }
+
     public void Shutdown() 
     { 
     }
@@ -44,6 +48,20 @@ class ZigInputWebplayer : IZigInputReader
         }
     }
 
+
+    private void HandleNewLabelMap(object sender, NewDataEventArgs e)
+    {
+        byte[] labelBytes = Convert.FromBase64String(e.JsonData);
+        short[] output = LabelMap.data;
+        for (int i = 0; i < output.Length; i++)
+        {
+            output[i] = (short)(labelBytes[i * 2] + (labelBytes[i * 2 + 1] << 8));
+        }
+    }
+
+
+
+
     private void HandleNewImage(object sender, NewDataEventArgs e)
     {
         byte[] imageBytes = Convert.FromBase64String(e.JsonData);
@@ -63,7 +81,7 @@ class ZigInputWebplayer : IZigInputReader
         {
             if (updateDepth != value) {
                 updateDepth = value;
-                WebplayerReceiver.SetStreamsToUpdate(updateDepth, updateImage);
+                WebplayerReceiver.SetStreamsToUpdate(updateDepth, updateImage, updateLabelMap);
             }
         }
     }
@@ -74,11 +92,28 @@ class ZigInputWebplayer : IZigInputReader
         {
             if (updateImage != value) {
                 updateImage = value;
-                WebplayerReceiver.SetStreamsToUpdate(updateDepth, updateImage);
+                WebplayerReceiver.SetStreamsToUpdate(updateDepth, updateImage, updateLabelMap);
             }
         }
     }
-	
+
+
+    bool updateLabelMap = false;
+    public bool UpdateLabelMap
+    {
+        get { return updateLabelMap; }
+        set
+        {
+            if (updateLabelMap != value)
+            {
+                updateLabelMap = value;
+                WebplayerReceiver.SetStreamsToUpdate(updateDepth, updateImage, updateLabelMap);
+            }
+        }
+    }
+
+
+
 	// needed for some disparity between the output of the JSON decoder and our zig input layer
 	static void Intify(ArrayList list, string property)
 	{

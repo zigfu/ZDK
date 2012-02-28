@@ -61,6 +61,8 @@ class PreventDoubleInit
         FileMapExecute = 0x0020,
     }
 
+    
+
     static IntPtr INVALID_HANDLE_VALUE = new IntPtr(-1);
 	
     const string eventName = "KinectReader_PreventDoubleInit";
@@ -345,6 +347,7 @@ class NuiWrapper
 
 class ZigInputKinectSDK : IZigInputReader
 {
+    static short PLAYER_MASK = 0x00000007;
 	NuiWrapper.NuiSkeletonFrame skeletonFrame = new NuiWrapper.NuiSkeletonFrame();
     NuiWrapper.NuiImageFrame depthFrame;
     NuiWrapper.NuiImageFrame imageFrame;
@@ -388,6 +391,8 @@ class ZigInputKinectSDK : IZigInputReader
 
         Image = new ZigImage(640, 480);
         Depth = new ZigDepth(320, 240);
+        LabelMap = new ZigLabelMap(320, 240);
+        
 	}
 	
 	public void Update() 
@@ -407,7 +412,23 @@ class ZigInputKinectSDK : IZigInputReader
                 NuiWrapper.NuiLockedRect rect = depthTexture.LockRect();
                 Marshal.Copy(rect.ActualDataFinally, Depth.data, 0, Depth.data.Length);
                 depthTexture.UnlockRect();
-
+                if (UpdateLabelMap)
+                {
+                    for (int i = 0; i < Depth.data.Length; i++)
+                    {
+                        short d = Depth.data[i];
+                        LabelMap.data[i] = (short)(d & PLAYER_MASK);
+                        Depth.data[i] = (short)(d >> 3);
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < Depth.data.Length; i++)
+                    {
+                        short d = Depth.data[i];                     
+                        Depth.data[i] = (short)(d >> 3);
+                    }
+                }
                 // release current frame
                 NuiWrapper.NuiImageStreamReleaseFrame(context.DepthHandle, ref depthFrame);
             }
@@ -450,9 +471,11 @@ class ZigInputKinectSDK : IZigInputReader
 	}
 
     public ZigDepth Depth { get; private set; }
-    public ZigImage Image { get; private set; }	
+    public ZigImage Image { get; private set; }
+    public ZigLabelMap LabelMap { get; private set; }
 	public bool UpdateDepth { get; set; }
 	public bool UpdateImage { get; set; }
+    public bool UpdateLabelMap { get; set; }
 	
 	//-------------------------------------------------------------------------
 	// Internal stuff
