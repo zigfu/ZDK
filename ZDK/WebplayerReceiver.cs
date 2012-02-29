@@ -38,14 +38,17 @@ class WebplayerReceiver : MonoBehaviour
 			for (webplayerId in WebplayerIds) {
 				var unity = unityObject.getObjectById(webplayerId);
 				if (null == unity) continue;
-				unity.SendMessage(WebplayerIds[webplayerId], 'NewData', data);
                 if (typeof streamsRequested == 'undefined') continue;
-                if (streamsRequested.depth) {
+                if (streamsRequested.updateDepth) {
                     unity.SendMessage(WebplayerIds[webplayerId], 'NewDepth', plugin.depthMap);
                 }
-                if (streamsRequested.image) { 
+                if (streamsRequested.updateImage) { 
                     unity.SendMessage(WebplayerIds[webplayerId], 'NewImage', plugin.imageMap);
                 }
+                if (streamsRequested.updateLabelMap) { 
+                    unity.SendMessage(WebplayerIds[webplayerId], 'NewLabelMap', plugin.labelMap);
+                }
+				unity.SendMessage(WebplayerIds[webplayerId], 'NewData', data);
 			}
 		}
         function sendLoaded(playerId, objectName) {
@@ -103,10 +106,10 @@ class WebplayerReceiver : MonoBehaviour
             return null;
 		}
 
-        function setStreams(depth, image) {
-            streamsRequested = { depth : depth, image : image };
+        function setStreams(depth, image, labelMap) {
+            streamsRequested = { updateDepth : depth, updateImage : image, updateLabelMap : labelMap};
             var zig = GetZigObject();
-            if (zig) zig.requestStreams(depth, image, false);
+            if (zig) zig.requestStreams(streamsRequested);
         }
 
         function pollPrezig(prezig, playerId, objectName) {
@@ -115,18 +118,18 @@ class WebplayerReceiver : MonoBehaviour
                 webplayerInitZigPlugin(playerId,objectName);
             } else {
                 console.log('prezig is not yet ready :/');
-                setInterval(pollPrezig, 100, prezig, playerId, objectName);
+                setTimeout(pollPrezig, 100, prezig, playerId, objectName);
             }
         }
 
 		function webplayerInitZigPlugin(playerId, objectName)
 		{
-            if (typeof streamsRequested == 'undefined' ) streamsRequested = { depth : false, image : false };
+            if (typeof streamsRequested == 'undefined' ) streamsRequested = { updateDepth : false, updateImage : false, updateLabelMap : false};
             var preZig = GetUnreadyZigObject();
             if (preZig !== null) {
                 console.log('got prezig, polling till valid!');
                 sendLoaded(playerId, objectName);
-                setInterval(pollPrezig, 100, prezig, playerId, objectName);
+                setTimeout(pollPrezig, 100, prezig, playerId, objectName);
                 return;
             }
 			var zigObject = GetZigObject();
@@ -138,7 +141,7 @@ class WebplayerReceiver : MonoBehaviour
 				newDiv.innerHTML = html;
 				document.body.appendChild(newDiv);
 				zigObject = document.getElementById('zigPluginObject');
-                setStreams(streamsRequested.depth, streamsRequested.image);
+                setStreams(streamsRequested.updateDepth, streamsRequested.updateImage, streamsRequested.updateLabelMap);
 			} else {
                 console.log('using existing zig plugin object!');
 				WebplayerIds = [];
