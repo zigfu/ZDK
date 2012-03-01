@@ -17,6 +17,8 @@ class PluginSettingsEventArgs : EventArgs
     public int DepthMapY;
     public int LabelMapX;
     public int LabelMapY;
+    public Vector3 ImageSpaceEdge;
+    public Vector3 WorldSpaceEdge;
 }
 
 class WebplayerReceiver : MonoBehaviour
@@ -63,15 +65,21 @@ class WebplayerReceiver : MonoBehaviour
 			if (undefined === plugin) {
 				plugin = document.getElementById('zigPluginObject');
 			}
+            //TODO: finish support for settings on the ZigInput side
+            var imagePoint = [160,120,1000];
+            var worldPoint = plugin.convertImageToWorldSpace(imagePoint);
+			for (webplayerId in WebplayerIds) {
+				var unity = unityObject.getObjectById(webplayerId);
+				if (null == unity) continue;
+                unity.SendMessage(WebplayerIds[webplayerId], 'PluginSettings', JSON.stringify(
+                                    {imageMapResolution : plugin.imageMapResolution,
+                                     depthMapResolution : plugin.depthMapResolution,
+                                     worldSpacePoint : worldPoint,
+                                     imageSpacePoint : imagePoint,
+                                     }));
+            }
+            // listen to plugin event
 			addHandler(plugin, 'NewFrame', webplayerOnNewData);
-            //TODO: finish support on the ZigInput side
-			//for (webplayerId in WebplayerIds) {
-			//	var unity = unityObject.getObjectById(webplayerId);
-			//	if (null == unity) continue;
-            //    unity.SendMessage(WebplayerIds[webplayerId], 'PluginSettings', JSON.stringify(
-            //                        {imageMapResolution:plugin.imageMapResolution,
-            //                         depthMapResolution:plugin.depthMapResolution,}));
-            //}
 		}
 
 		CachedZigObject = null;
@@ -249,27 +257,33 @@ class WebplayerReceiver : MonoBehaviour
             WebplayerLogger.Log(ex.ToString());
         }
     }
-    //public event EventHandler<PluginSettingsEventArgs> PluginSettingsEvent;
-    //void PluginSettings(string param)
-    //{
-    //    Hashtable settings = (Hashtable)JSON.JsonDecode(param);
-    //    Hashtable image = (Hashtable)settings["imageMapSettings"];
-    //    Hashtable depth = (Hashtable)settings["depthMapSettings"];
+    public event EventHandler<PluginSettingsEventArgs> PluginSettingsEvent;
+    void PluginSettings(string param)
+    {
+        Hashtable settings = (Hashtable)JSON.JsonDecode(param);
+        Hashtable image = (Hashtable)settings["imageMapResolution"];
+        Hashtable depth = (Hashtable)settings["depthMapResolution"];
+        ArrayList worldPoint = (ArrayList)settings["worldSpacePoint"];
+        ArrayList imagePoint = (ArrayList)settings["imageSpacePoint"];
         
-    //    try {
-    //        if (null != PluginSettingsEvent) {
-    //            PluginSettingsEvent.Invoke(this, new PluginSettingsEventArgs() {
-    //                ImageMapX = (int)(double)image["width"],
-    //                ImageMapY = (int)(double)image["height"],
-    //                DepthMapX = (int)(double)depth["width"],
-    //                DepthMapY = (int)(double)depth["height"],
-    //            });
-    //        }
-    //    }
-    //    catch (System.Exception ex) {
-    //        // the logger will show exceptions on screen, useful for 
-    //        // webplayer debugging
-    //        WebplayerLogger.Log(ex.ToString());
-    //    }
-    //}
+        try {
+            Vector3 worldVec = new Vector3((float)(double)worldPoint[0], (float)(double)worldPoint[1], (float)(double)worldPoint[2]);
+            Vector3 imageVec = new Vector3((float)(double)imagePoint[0], (float)(double)imagePoint[1], (float)(double)imagePoint[2]);
+            if (null != PluginSettingsEvent) {
+                PluginSettingsEvent.Invoke(this, new PluginSettingsEventArgs() {
+                    ImageMapX = (int)(double)image["width"],
+                    ImageMapY = (int)(double)image["height"],
+                    DepthMapX = (int)(double)depth["width"],
+                    DepthMapY = (int)(double)depth["height"],
+                    WorldSpaceEdge = worldVec,
+                    ImageSpaceEdge = imageVec,
+                });
+            }
+        }
+        catch (System.Exception ex) {
+            // the logger will show exceptions on screen, useful for 
+            // webplayer debugging
+            WebplayerLogger.Log(ex.ToString());
+        }
+    }
 }

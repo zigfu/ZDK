@@ -12,6 +12,7 @@ class ZigInputWebplayer : IZigInputReader
 	public void Init()
 	{
 		WebplayerReceiver receiver = WebplayerReceiver.Create();
+        receiver.PluginSettingsEvent += new EventHandler<PluginSettingsEventArgs>(receiver_PluginSettingsEvent);
 		receiver.NewDataEvent += HandleReceiverNewDataEvent;
         XRes = 160; // TODO: make better - the plugin exports the depth/image map resolutions (partially done in WebplayerReceiver side)
         YRes = 120;
@@ -22,6 +23,43 @@ class ZigInputWebplayer : IZigInputReader
         this.Image = new ZigImage(XRes, YRes);
         this.LabelMap = new ZigLabelMap(XRes, YRes);
     }
+
+    // Image-space <-> World-space conversions
+    float worldToImageXRatio;
+    float worldToImageYRatio;
+
+    public Vector3 ConvertImageToWorldSpace(Vector3 imagePos)
+    {
+        float xCentered = imagePos.x - (Depth.xres / 2);
+        float yCentered = imagePos.y - (Depth.yres / 2);
+        return new Vector3(xCentered * imagePos.z * worldToImageXRatio,
+                           yCentered * imagePos.z * worldToImageYRatio,
+                           imagePos.z);
+    }
+    public Vector3 ConvertWorldToImageSpace(Vector3 worldPos)
+    {
+        if (Mathf.Approximately(worldPos.z, 0)) { 
+            return new Vector3(Depth.xres / 2, Depth.yres / 2, worldPos.z);
+        }
+
+        return new Vector3((Depth.xres / 2) + (worldPos.x / (worldPos.z * worldToImageXRatio)),
+                           (Depth.yres / 2) + (worldPos.y / (worldPos.z * worldToImageYRatio)),
+                           worldPos.z);
+    }
+    void receiver_PluginSettingsEvent(object sender, PluginSettingsEventArgs e)
+    {
+        // implicitly assuming worldSpaceEdge and ImageSpaceEdge are of the same Z
+        worldToImageXRatio = (e.WorldSpaceEdge.x / (e.ImageSpaceEdge.x / 2)) / e.WorldSpaceEdge.z;
+        worldToImageYRatio = (e.WorldSpaceEdge.y / (e.ImageSpaceEdge.y / 2)) / e.WorldSpaceEdge.z;
+        // quick sanity test
+        //Vector3 pt1 = new Vector3(140, 30, 500);
+        //Vector3 inworld = ConvertImageToWorldSpace(pt1);
+        //Vector3 inimage = ConvertWorldToImageSpace(inworld);
+        //WebplayerLogger.Log(string.Format("conversions: image({0},{1},{2})->world({3},{4},{5})->image({6},{7},{8})",
+        //                                  pt1.x, pt1.y, pt1.z, inworld.x, inworld.y, inworld.z, inimage.x, inimage.y, inimage.z));
+    }
+   
+
     public ZigDepth Depth { get; private set; }
     public ZigImage Image { get; private set; }
     public ZigLabelMap LabelMap { get; private set; }

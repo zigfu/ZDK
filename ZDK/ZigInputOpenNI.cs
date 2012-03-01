@@ -110,7 +110,18 @@ class ZigInputOpenNI : IZigInputReader
 	public bool UpdateImage { get; set; }
     public bool UpdateLabelMap { get; set; }
 
-	//-------------------------------------------------------------------------
+    // RW <-> projective conversions
+    public Vector3 ConvertWorldToImageSpace(Vector3 worldPosition)
+    {
+        Point3D pt = Depthmap.ConvertRealWorldToProjective(new Point3D(worldPosition.x, worldPosition.y, worldPosition.z));
+        return new Vector3(pt.X, pt.Y, pt.Z);
+    }
+    public Vector3 ConvertImageToWorldSpace(Vector3 imagePosition)
+    {
+        Point3D pt = Depthmap.ConvertProjectiveToRealWorld(new Point3D(imagePosition.x, imagePosition.y, imagePosition.z));
+        return new Vector3(pt.X, pt.Y, pt.Z);
+    }
+    //-------------------------------------------------------------------------
 	// Internal stuff
 	//-------------------------------------------------------------------------
 	

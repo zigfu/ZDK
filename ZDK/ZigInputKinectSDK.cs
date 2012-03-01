@@ -343,6 +343,13 @@ class NuiWrapper
 
 	[DllImport("kinect10.dll")]
 	public static extern void NuiShutdown();
+
+    [DllImport("kinect10.dll")]
+    public static extern Vector4 NuiTransformDepthImageToSkeleton(int DepthX, int DepthY, ushort DepthValue);
+
+    [DllImport("kinect10.dll")]
+    public static extern void NuiTransformSkeletonToDepthImage(Vector4 vPoint, out float pfDepthX, out float pfDepthY);
+
 }
 
 class ZigInputKinectSDK : IZigInputReader
@@ -476,7 +483,28 @@ class ZigInputKinectSDK : IZigInputReader
 	public bool UpdateDepth { get; set; }
 	public bool UpdateImage { get; set; }
     public bool UpdateLabelMap { get; set; }
-	
+
+    public Vector3 ConvertWorldToImageSpace(Vector3 worldPosition)
+    {
+        NuiWrapper.Vector4 pt = new NuiWrapper.Vector4() {
+            x = worldPosition.x / 1000, // Kinect SDK is in meters, we're in millimeters
+            y = worldPosition.y / 1000,
+            z = worldPosition.z / 1000,
+            w = 1 // this is a homogenous space
+        };
+        Vector3 result = new Vector3();
+        result.z = worldPosition.z;
+        NuiWrapper.NuiTransformSkeletonToDepthImage(pt, out result.x, out result.y);
+        return result;
+    }
+    public Vector3 ConvertImageToWorldSpace(Vector3 imagePosition)
+    {
+        NuiWrapper.Vector4 pt = NuiWrapper.NuiTransformDepthImageToSkeleton((int)imagePosition.x, (int)imagePosition.y, (ushort)imagePosition.z);
+        return new Vector3(pt.x * 1000, // Kinect SDK is in meters, we're in millimeters
+                           pt.y * 1000,
+                           imagePosition.z);
+    }
+
 	//-------------------------------------------------------------------------
 	// Internal stuff
 	//-------------------------------------------------------------------------

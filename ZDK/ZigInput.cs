@@ -137,6 +137,10 @@ interface IZigInputReader
     ZigDepth Depth { get; }
     ZigImage Image { get; }
     ZigLabelMap LabelMap { get; }
+
+    // misc
+    Vector3 ConvertWorldToImageSpace(Vector3 worldPosition);
+    Vector3 ConvertImageToWorldSpace(Vector3 imagePosition);
 }
 
 public class ZigTrackedUser
@@ -401,4 +405,16 @@ public class ZigInput : MonoBehaviour {
            }
 		}
 	}
+    //-------------------------------------------------------------------------
+    // World <-> Image space conversions
+    //-------------------------------------------------------------------------
+    public static Vector3 ConvertImageToWorldSpace(Vector3 imagePosition)
+    {
+        return Instance.reader.ConvertImageToWorldSpace(imagePosition);
+    }
+
+    public static Vector3 ConvertWorldToImageSpace(Vector3 worldPosition)
+    {
+        return Instance.reader.ConvertWorldToImageSpace(worldPosition);
+    }
 }
