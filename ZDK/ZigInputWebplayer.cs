@@ -193,7 +193,31 @@ class ZigInputWebplayer : IZigInputReader
 			user.SkeletonData = joints;
 			users.Add(user);
 		}
-			
+		// now read depth/image/labelmap if there
+        int index = JSON.ConsumedCharacters;
+        string sourceString = e.JsonData;
+        const int MAP_16BPP_ENCODED_SIZE = (160*120*2*4)/3; //TODO: un-hardcode
+        const int MAP_24BPP_ENCODED_SIZE = (160*120*3*4)/3; //TODO: un-hardcode
+        while (index < sourceString.Length) {
+            char type = sourceString[index];
+            index++;
+            switch(type) {
+                case 'd':
+                    HandleNewDepth(sender, new NewDataEventArgs(sourceString.Substring(index, MAP_16BPP_ENCODED_SIZE)));
+                    index += MAP_16BPP_ENCODED_SIZE;
+                    break;
+                case 'l':
+                    HandleNewLabelMap(sender, new NewDataEventArgs(sourceString.Substring(index, MAP_16BPP_ENCODED_SIZE)));
+                    index += MAP_16BPP_ENCODED_SIZE;
+                    break;
+                case 'i':
+                    HandleNewImage(sender, new NewDataEventArgs(sourceString.Substring(index, MAP_24BPP_ENCODED_SIZE)));
+                    index += MAP_24BPP_ENCODED_SIZE;
+                    break;
+                default: // just go on to next char
+                    break;
+            }
+        }
     	OnNewUsersFrame(users);
 	}
 	

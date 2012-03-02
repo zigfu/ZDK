@@ -35,6 +35,11 @@ public class JSON
 	protected int lastErrorIndex = -1;
 	protected string lastDecode = "";
 
+    // my change 
+    protected int consumedCharacters = -1;
+
+    public static int ConsumedCharacters { get { return instance.consumedCharacters; } }
+
 	/// <summary>
 	/// Parses the string json into a value
 	/// </summary>
@@ -55,7 +60,8 @@ public class JSON
 			} else {
 				JSON.instance.lastErrorIndex = index;
 			}
-			return value;
+            JSON.instance.consumedCharacters = index;
+            return value;
         } else {
             return null;
         }

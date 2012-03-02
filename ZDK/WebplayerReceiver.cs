@@ -36,21 +36,33 @@ class WebplayerReceiver : MonoBehaviour
 		}
 		WebplayerIds = [];
 		function webplayerOnNewData(data) {
+            if (typeof streamsRequested == 'undefined') return;
 			var plugin = GetZigObject();
+            var messageString = data;
+            var tempStr = '';
+            if (streamsRequested.updateDepth) {
+                tempStr = plugin.depthMap;
+                if (tempStr.length > 0) {
+                    messageString += 'd'+ tempStr;
+                }
+            }
+            if (streamsRequested.updateImage) { 
+                tempStr = plugin.imageMap;
+                if (tempStr.length > 0) {
+                    messageString += 'i'+ tempStr;
+                }
+            }
+            if (streamsRequested.updateLabelMap) { 
+                tempStr = plugin.labelMap;
+                if (tempStr.length > 0) {
+                    messageString += 'l'+ tempStr;
+                }
+            }
+
 			for (webplayerId in WebplayerIds) {
 				var unity = unityObject.getObjectById(webplayerId);
 				if (null == unity) continue;
-                if (typeof streamsRequested == 'undefined') continue;
-                if (streamsRequested.updateDepth) {
-                    unity.SendMessage(WebplayerIds[webplayerId], 'NewDepth', plugin.depthMap);
-                }
-                if (streamsRequested.updateImage) { 
-                    unity.SendMessage(WebplayerIds[webplayerId], 'NewImage', plugin.imageMap);
-                }
-                if (streamsRequested.updateLabelMap) { 
-                    unity.SendMessage(WebplayerIds[webplayerId], 'NewLabelMap', plugin.labelMap);
-                }
-				unity.SendMessage(WebplayerIds[webplayerId], 'NewData', data);
+				unity.SendMessage(WebplayerIds[webplayerId], 'NewData', messageString);
 			}
 		}
         function sendLoaded(playerId, objectName) {
