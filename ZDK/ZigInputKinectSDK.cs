@@ -659,9 +659,9 @@ class ZigInputKinectSDK : IZigInputReader
 	{
 		Matrix3x3 result = new Matrix3x3();
 		result.col0 = (new Vector3(v.y, -v.x, 0.0f)).normalized;
-		result.col1 = v.normalized;
-		result.col2 = RCross(result.col1, result.col0);
-		return result;
+        result.col2 = v.normalized;
+        result.col1 = RCross(result.col2, result.col0);
+        return result;
 	}
 
 	private Matrix3x3 orientationFromXY(Vector3 vx, Vector3 vy)
