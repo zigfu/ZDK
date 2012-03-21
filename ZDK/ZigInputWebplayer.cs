@@ -25,8 +25,8 @@ class ZigInputWebplayer : IZigInputReader
     }
 
     // Image-space <-> World-space conversions
-    float worldToImageXRatio;
-    float worldToImageYRatio;
+    float worldToImageXRatio = 1.11146f; // some sane defaults
+    float worldToImageYRatio = 0.83359f;
 
     public Vector3 ConvertImageToWorldSpace(Vector3 imagePos)
     {
