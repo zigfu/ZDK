@@ -36,7 +36,6 @@ class ZigInputOpenNI : IZigInputReader
         }
 		
 		this.Depthmap = OpenNode(NodeType.Depth) as DepthGenerator;
-		this.Imagemap = OpenNode(NodeType.Image) as ImageGenerator;
     
 		this.Users = OpenNode(NodeType.User) as UserGenerator;
 		this.Hands = OpenNode(NodeType.Hands) as HandsGenerator;
@@ -55,7 +54,14 @@ class ZigInputOpenNI : IZigInputReader
         
 
         this.Depth = new ZigDepth(Depthmap.GetMetaData().XRes, Depthmap.GetMetaData().YRes);
-        this.Image = new ZigImage(Imagemap.GetMetaData().XRes, Imagemap.GetMetaData().YRes);
+        try {
+            this.Imagemap = OpenNode(NodeType.Image) as ImageGenerator;
+            this.Image = new ZigImage(Imagemap.GetMetaData().XRes, Imagemap.GetMetaData().YRes);
+        }
+        catch (OpenNI.GeneralException) {
+            this.Imagemap = null;
+            this.Image = new ZigImage(320, 240); //hard code the shit;
+        }
         this.LabelMap = new ZigLabelMap(Depth.xres, Depth.yres);
         rawImageMap = new byte[Image.xres * Image.yres * 3];
 	}
@@ -75,11 +81,12 @@ class ZigInputOpenNI : IZigInputReader
 			lastDepthFrameId = Depthmap.FrameID;
 			ProcessNewDepthFrame();
 		}
-		
-		if (lastImageFrameId != Imagemap.FrameID) {
-			lastImageFrameId = Imagemap.FrameID;
-			ProcessNewImageFrame();
-		}
+        if (Imagemap != null) {
+            if (lastImageFrameId != Imagemap.FrameID) {
+                lastImageFrameId = Imagemap.FrameID;
+                ProcessNewImageFrame();
+            }
+        }
         if (lastLabelMapFrameId != Users.FrameID) {
 			lastLabelMapFrameId = Users.FrameID;
 			ProcessNewLabelMapFrame();
