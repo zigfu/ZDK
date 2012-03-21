@@ -273,15 +273,30 @@ class WebplayerReceiver : MonoBehaviour
     void PluginSettings(string param)
     {
         Hashtable settings = (Hashtable)JSON.JsonDecode(param);
-        Hashtable image = (Hashtable)settings["imageMapResolution"];
-        Hashtable depth = (Hashtable)settings["depthMapResolution"];
-        ArrayList worldPoint = (ArrayList)settings["worldSpacePoint"];
-        ArrayList imagePoint = (ArrayList)settings["imageSpacePoint"];
+        Hashtable image;
+        Hashtable depth;
+        ArrayList worldPoint;
+        ArrayList imagePoint;
         
+        Vector3 worldVec;
+        Vector3 imageVec;
         try {
-            Vector3 worldVec = new Vector3((float)(double)worldPoint[0], (float)(double)worldPoint[1], (float)(double)worldPoint[2]);
-            Vector3 imageVec = new Vector3((float)(double)imagePoint[0], (float)(double)imagePoint[1], (float)(double)imagePoint[2]);
-            if (null != PluginSettingsEvent) {
+            image = (Hashtable)settings["imageMapResolution"];
+            depth = (Hashtable)settings["depthMapResolution"];
+            worldPoint = (ArrayList)settings["worldSpacePoint"];
+            imagePoint = (ArrayList)settings["imageSpacePoint"];
+
+            worldVec = new Vector3((float)(double)worldPoint[0], (float)(double)worldPoint[1], (float)(double)worldPoint[2]);
+            imageVec = new Vector3((float)(double)imagePoint[0], (float)(double)imagePoint[1], (float)(double)imagePoint[2]);
+        }
+        catch (ArgumentOutOfRangeException) {
+            return; // bad settings
+        }
+        catch (InvalidCastException) {
+            return;
+        }
+        try {
+                if (null != PluginSettingsEvent) {
                 PluginSettingsEvent.Invoke(this, new PluginSettingsEventArgs() {
                     ImageMapX = (int)(double)image["width"],
                     ImageMapY = (int)(double)image["height"],
