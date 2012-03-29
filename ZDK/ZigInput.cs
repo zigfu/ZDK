@@ -264,7 +264,7 @@ public class ZigInput : MonoBehaviour {
 	public static bool UpdateImage;
     public static bool UpdateLabelMap;
 
-	public static ZigInputType InputType = ZigInputType.KinectSDK;
+	//public static ZigInputType InputType = ZigInputType.KinectSDK;
 	static ZigInput instance;
 	public static ZigInput Instance
 	{
@@ -303,32 +303,41 @@ public class ZigInput : MonoBehaviour {
 		// reader factory
 		if (Application.isWebPlayer) {
 			reader = (new ZigInputWebplayer()) as IZigInputReader;
+            ReaderInited = StartReader();
 		} else {
-			switch (ZigInput.InputType) {
-			case ZigInputType.OpenNI:
-				reader = (new ZigInputOpenNI()) as IZigInputReader;
-				break;
-			case ZigInputType.KinectSDK:
-				reader = (new ZigInputKinectSDK()) as IZigInputReader;
-				break;
-			}
+            print("Trying to open Kinect sensor using MS Kinect SDK");
+            reader = (new ZigInputKinectSDK()) as IZigInputReader;
+            if (StartReader()) {
+                ReaderInited = true; // KinectSDK
+            } else {
+                print("failed opening Kinect SDK sensor, trying OpenNI (if you're using Kinect SDK, please unplug the sensor, restart Unity and try again)");
+                reader = (new ZigInputOpenNI()) as IZigInputReader;
+                ReaderInited = StartReader();
+            } 
+                
 		}
-		
-		reader.NewUsersFrame += HandleReaderNewUsersFrame;
-		reader.UpdateDepth = ZigInput.UpdateDepth;
+	}
+
+    private bool StartReader()
+    {
+
+        reader.NewUsersFrame += HandleReaderNewUsersFrame;
+        reader.UpdateDepth = ZigInput.UpdateDepth;
         reader.UpdateImage = ZigInput.UpdateImage;
         reader.UpdateLabelMap = ZigInput.UpdateLabelMap;
-		
-		try {
-			reader.Init();
+
+        try {
+            reader.Init();
             ZigInput.Depth = reader.Depth;
             ZigInput.Image = reader.Image;
             ZigInput.LabelMap = reader.LabelMap;
-			ReaderInited = true;
-		} catch (Exception ex) {
-			Debug.LogError(ex.Message);
-		}
-	}
+            return true;
+        }
+        catch (Exception ex) {
+            Debug.LogError(ex.Message);
+            return false;
+        }
+    }
 
     // Update is called once per frame
 	void Update () {
