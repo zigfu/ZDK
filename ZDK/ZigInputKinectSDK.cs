@@ -375,17 +375,20 @@ class ZigInputKinectSDK : IZigInputReader
 
             UInt32 hr = NuiWrapper.NuiInitialize(flags);
             if (0 != hr) {
+                NuiWrapper.NuiShutdown(); // just in case
                 throw new Exception("Error initing Kinect SDK: " + hr);
             }
 
             context = new NuiContext();
             hr = NuiWrapper.NuiImageStreamOpen(NuiWrapper.NuiImageType.DepthAndPlayerIndex, NuiWrapper.NuiImageResolution.Res320x240, 0, 2, IntPtr.Zero, out context.DepthHandle);
             if (0 != hr) {
+                NuiWrapper.NuiShutdown(); // just in case
                 throw new Exception("Error opening depth stream: " + hr);
             }
 
             hr = NuiWrapper.NuiImageStreamOpen(NuiWrapper.NuiImageType.Color, NuiWrapper.NuiImageResolution.Res640x480, 0, 2, IntPtr.Zero, out context.ImageHandle);
             if (0 != hr) {
+                NuiWrapper.NuiShutdown(); // just in case
                 throw new Exception("Error opening image stream: " + hr);
             }
             
