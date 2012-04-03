@@ -305,16 +305,30 @@ public class ZigInput : MonoBehaviour {
 			reader = (new ZigInputWebplayer()) as IZigInputReader;
             ReaderInited = StartReader();
 		} else {
-            print("Trying to open Kinect sensor using MS Kinect SDK");
-            reader = (new ZigInputKinectSDK()) as IZigInputReader;
-            if (StartReader()) {
+            print("Trying to open Kinect sensor using MS Kinect SDK");            
+            reader = (new ZigInputKinectSDK()) as IZigInputReader;            
+            
+            
+            if (StartReader())
+            {
                 ReaderInited = true; // KinectSDK
-            } else {
-                print("failed opening Kinect SDK sensor, trying OpenNI (if you're using Kinect SDK, please unplug the sensor, restart Unity and try again)");
-                reader = (new ZigInputOpenNI()) as IZigInputReader;
-                ReaderInited = StartReader();
-            } 
+            }
+            else
+            {
+                print("failed opening Kinect SDK sensor (if you're using Kinect SDK, please unplug the sensor, restart Unity and try again)");
+                print("Trying to open sensor using OpenNI");
                 
+                reader = (new ZigInputOpenNI()) as IZigInputReader;
+                if (StartReader())
+                {
+                    ReaderInited = true;
+                }
+                else
+                {
+                    print("failed opening sensor using OpenNI");
+                    Debug.LogError("Failed to load driver and middleware, review warnings above for specific exception messages from middleware");
+                } 
+             }                           
 		}
 	}
 
@@ -334,7 +348,7 @@ public class ZigInput : MonoBehaviour {
             return true;
         }
         catch (Exception ex) {
-            Debug.LogError(ex.Message);
+            Debug.LogWarning(ex.Message);
             return false;
         }
     }

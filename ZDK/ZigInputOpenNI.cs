@@ -40,7 +40,9 @@ class ZigInputOpenNI : IZigInputReader
 		this.Users = OpenNode(NodeType.User) as UserGenerator;
 		this.Hands = OpenNode(NodeType.Hands) as HandsGenerator;
 		this.Gestures = OpenNode(NodeType.Gesture) as GestureGenerator;
-		
+        this.userExitList = new List<int>();
+    
+
 		this.OpenNIContext.GlobalMirror = Mirror;
         mirrorState = Mirror;
 	
@@ -48,6 +50,9 @@ class ZigInputOpenNI : IZigInputReader
 		this.Users.SkeletonCapability.SetSkeletonProfile(SkeletonProfile.All);
         this.Users.NewUser += new EventHandler<NewUserEventArgs>(userGenerator_NewUser);
         this.Users.LostUser += new EventHandler<UserLostEventArgs>(userGenerator_LostUser);
+        this.Users.UserExit += new EventHandler<UserExitEventArgs>(userGenerator_UserExit);
+        this.Users.UserReEnter += new EventHandler<UserReEnterEventArgs>(userGenerator_UserReEnter);
+
         this.Users.PoseDetectionCapability.PoseDetected += new EventHandler<PoseDetectedEventArgs>(poseDetectionCapability_PoseDetected);
 		this.Users.SkeletonCapability.CalibrationComplete += new EventHandler<CalibrationProgressEventArgs>(skeletonCapbility_CalibrationComplete);
         
@@ -154,7 +159,10 @@ class ZigInputOpenNI : IZigInputReader
 	int lastDepthFrameId;
 	int lastImageFrameId;
     int lastLabelMapFrameId;
-	
+
+    List<int> userExitList;
+    
+
     // Tries to get an existing node, or opening a new one
     // if we need to
 	public ProductionNode OpenNode(NodeType nt)
@@ -189,9 +197,39 @@ class ZigInputOpenNI : IZigInputReader
         Users.SkeletonCapability.RequestCalibration(e.ID, true);
     }
 
+    void userGenerator_UserExit(object sender, UserExitEventArgs e)
+    {
+        //stop checking for pose and stop tracking
+      /*  if (Users.SkeletonCapability.DoesNeedPoseForCalibration)
+        {
+            Users.PoseDetectionCapability.StopPoseDetection(e.ID);            
+        }
+        else
+        {
+            Users.SkeletonCapability.StopTracking(e.ID);
+        }*/
+        userExitList.Add(e.ID);
+
+    }
+
+    void userGenerator_UserReEnter(object sender, UserReEnterEventArgs e)
+    {
+        //start Tracking again
+      /*  if (Users.SkeletonCapability.DoesNeedPoseForCalibration)
+        {
+            Users.PoseDetectionCapability.StartPoseDetection(Users.SkeletonCapability.CalibrationPose, e.ID);
+        }
+        else
+        {
+            Users.SkeletonCapability.StartTracking(e.ID);
+        }*/
+        userExitList.Remove(e.ID);
+    }
+    
     void userGenerator_LostUser(object sender, UserLostEventArgs e)
     {
-    }
+        userExitList.Remove(e.ID);
+    }    
 
     void userGenerator_NewUser(object sender, NewUserEventArgs e)
     {
@@ -233,35 +271,43 @@ class ZigInputOpenNI : IZigInputReader
 		int[] userids = Users.GetUsers();
 		List<ZigInputUser> users = new List<ZigInputUser>();
 		foreach (int userid in userids) {
-			// skeleton data
-			List<ZigInputJoint> joints = new List<ZigInputJoint>();
-			bool tracked = Users.SkeletonCapability.IsTracking(userid);
-			if (tracked) {
-				SkeletonCapability skelCap = Users.SkeletonCapability;
-				SkeletonJointTransformation skelTrans;
-				// foreach joint
-				foreach (SkeletonJoint sj in Enum.GetValues(typeof(SkeletonJoint))) {
-					if (skelCap.IsJointAvailable(sj)) {
-						skelTrans = skelCap.GetSkeletonJoint(userid, sj);
-						
-						ZigInputJoint joint = new ZigInputJoint((ZigJointId)sj);
-						if (skelTrans.Orientation.Confidence > 0.5f) {
-							joint.Rotation = OrientationToQuaternion(skelTrans.Orientation);
-							joint.GoodRotation = true;
-						}
-						if (skelTrans.Position.Confidence > 0.5f) {
-							joint.Position = Point3DToVector3(skelTrans.Position.Position);
-							joint.GoodPosition = true;
-						}
-						joints.Add(joint);
-					}
-				}
-			}
-			
-			ZigInputUser user = new ZigInputUser(userid, Point3DToVector3(Users.GetCoM(userid)));
-			user.Tracked = tracked;
-			user.SkeletonData = joints;
-			users.Add(user);
+            if (!userExitList.Contains(userid))
+            {
+                // skeleton data
+                List<ZigInputJoint> joints = new List<ZigInputJoint>();
+                bool tracked = Users.SkeletonCapability.IsTracking(userid);
+                if (tracked)
+                {
+                    SkeletonCapability skelCap = Users.SkeletonCapability;
+                    SkeletonJointTransformation skelTrans;
+                    // foreach joint
+                    foreach (SkeletonJoint sj in Enum.GetValues(typeof(SkeletonJoint)))
+                    {
+                        if (skelCap.IsJointAvailable(sj))
+                        {
+                            skelTrans = skelCap.GetSkeletonJoint(userid, sj);
+
+                            ZigInputJoint joint = new ZigInputJoint((ZigJointId)sj);
+                            if (skelTrans.Orientation.Confidence > 0.5f)
+                            {
+                                joint.Rotation = OrientationToQuaternion(skelTrans.Orientation);
+                                joint.GoodRotation = true;
+                            }
+                            if (skelTrans.Position.Confidence > 0.5f)
+                            {
+                                joint.Position = Point3DToVector3(skelTrans.Position.Position);
+                                joint.GoodPosition = true;
+                            }
+                            joints.Add(joint);
+                        }
+                    }
+                }
+
+                ZigInputUser user = new ZigInputUser(userid, Point3DToVector3(Users.GetCoM(userid)));
+                user.Tracked = tracked;
+                user.SkeletonData = joints;
+                users.Add(user);
+            }
 		}
 		
 		OnNewUsersFrame(users);
