@@ -202,6 +202,7 @@ public class ZigTrackedUser
 }
 
 public enum ZigInputType {
+    Auto,
 	OpenNI,
 	KinectSDK,
 }
@@ -264,7 +265,7 @@ public class ZigInput : MonoBehaviour {
 	public static bool UpdateImage;
     public static bool UpdateLabelMap;
 
-	//public static ZigInputType InputType = ZigInputType.KinectSDK;
+	public static ZigInputType InputType = ZigInputType.Auto;
 	static ZigInput instance;
 	public static ZigInput Instance
 	{
@@ -305,30 +306,59 @@ public class ZigInput : MonoBehaviour {
 			reader = (new ZigInputWebplayer()) as IZigInputReader;
             ReaderInited = StartReader();
 		} else {
-            print("Trying to open Kinect sensor using MS Kinect SDK");            
-            reader = (new ZigInputKinectSDK()) as IZigInputReader;            
-            
-            
-            if (StartReader())
+
+
+
+            if (ZigInput.InputType == ZigInputType.Auto)
             {
-                ReaderInited = true; // KinectSDK
+                    print("Trying to open Kinect sensor using MS Kinect SDK");
+                    reader = (new ZigInputKinectSDK()) as IZigInputReader;
+
+
+                    if (StartReader())
+                    {
+                        ReaderInited = true; // KinectSDK
+                    }
+                    else
+                    {
+                        print("failed opening Kinect SDK sensor (if you're using Kinect SDK, please unplug the sensor, restart Unity and try again)");
+                        print("Trying to open sensor using OpenNI");
+
+                        reader = (new ZigInputOpenNI()) as IZigInputReader;
+                        if (StartReader())
+                        {
+                            ReaderInited = true;
+                        }
+                        else
+                        {
+                            print("failed opening sensor using OpenNI");
+                            Debug.LogError("Failed to load driver and middleware, review warnings above for specific exception messages from middleware");
+                        }
+                    }
             }
             else
             {
-                print("failed opening Kinect SDK sensor (if you're using Kinect SDK, please unplug the sensor, restart Unity and try again)");
-                print("Trying to open sensor using OpenNI");
-                
-                reader = (new ZigInputOpenNI()) as IZigInputReader;
-                if (StartReader())
+                if (ZigInput.InputType == ZigInputType.OpenNI)
                 {
-                    ReaderInited = true;
+                    print("Trying to open sensor using OpenNI");
+                    reader = (new ZigInputOpenNI()) as IZigInputReader;
                 }
                 else
                 {
-                    print("failed opening sensor using OpenNI");
-                    Debug.LogError("Failed to load driver and middleware, review warnings above for specific exception messages from middleware");
-                } 
-             }                           
+                    print("Trying to open Kinect sensor using MS Kinect SDK");
+                    reader = (new ZigInputKinectSDK()) as IZigInputReader;
+                }
+
+                if (StartReader())
+                {
+                    ReaderInited = true; // KinectSDK
+                }
+                else
+                {
+                    Debug.LogError("Failed to load driver and middleware, consider setting the Zig Input Type to Auto");
+                }
+
+            }    
 		}
 	}
 
