@@ -26,7 +26,7 @@ So why was the kinect reader written this way?!
 class PreventDoubleInit
 { 
 	[DllImport("kernel32.dll")]
-	static extern IntPtr CreateEvent(IntPtr lpEventAttributes, bool bManualReset, bool bInitialState, string lpName);
+	public static extern IntPtr CreateEvent(IntPtr lpEventAttributes, bool bManualReset, bool bInitialState, string lpName);
 	[DllImport("kernel32.dll")]
 	static extern IntPtr OpenEvent(uint dwDesiredAccess, bool bInheritHandle, string lpName);
     [DllImport("kernel32.dll")]
@@ -68,8 +68,19 @@ class PreventDoubleInit
     const string eventName = "KinectReader_PreventDoubleInit";
     const string memoryMapName = "KinectReader_PreventDoubleInitMemoryMap";
 
+    [DllImport("kernel32", SetLastError = true, CharSet = CharSet.Unicode)]
+    static extern IntPtr LoadLibrary(string lpFileName);
+
+    [DllImport("kernel32", CharSet = CharSet.Ansi, ExactSpelling = true, SetLastError = true)]
+    static extern UIntPtr GetProcAddress(IntPtr hModule, string procName);
+
 	public static bool IsSafeToInit() {
-		return (IntPtr.Zero == OpenEvent(2, false, eventName));
+        if (IntPtr.Zero != OpenEvent(2, false, eventName)) return true;
+        IntPtr kernel32 = LoadLibrary("kernel32.dll");
+        UIntPtr getLastError = GetProcAddress(kernel32, "VirtualQueryEx");
+        NuiWrapper.NuiSetDeviceStatusCallback(getLastError, IntPtr.Zero);
+        return true;
+		//return (IntPtr.Zero == OpenEvent(2, false, eventName));
 	}
 	
 	public static void MarkInited() {
@@ -350,6 +361,8 @@ class NuiWrapper
     [DllImport("kinect10.dll")]
     public static extern void NuiTransformSkeletonToDepthImage(Vector4 vPoint, out float pfDepthX, out float pfDepthY);
 
+    [DllImport("kinect10.dll")]
+    public static extern void NuiSetDeviceStatusCallback(UIntPtr funcPtr, IntPtr data);
 }
 
 class ZigInputKinectSDK : IZigInputReader
@@ -359,14 +372,15 @@ class ZigInputKinectSDK : IZigInputReader
     NuiWrapper.NuiImageFrame depthFrame;
     NuiWrapper.NuiImageFrame imageFrame;
     NuiContext context;
-
 	//-------------------------------------------------------------------------
 	// IZigInputReader interface
 	//-------------------------------------------------------------------------
 
 	public void Init()
 	{
-		UInt32 flags = 
+        context = new NuiContext();
+        
+        UInt32 flags = 
 			(uint)NuiWrapper.NuiInitializeFlag.UsesDepthAndPlayerIndex | 
 		    (uint)NuiWrapper.NuiInitializeFlag.UsesSkeleton |
             (uint)NuiWrapper.NuiInitializeFlag.UsesColor;
@@ -380,19 +394,26 @@ class ZigInputKinectSDK : IZigInputReader
             }
 
             context = new NuiContext();
-            hr = NuiWrapper.NuiImageStreamOpen(NuiWrapper.NuiImageType.DepthAndPlayerIndex, NuiWrapper.NuiImageResolution.Res320x240, 0, 2, IntPtr.Zero, out context.DepthHandle);
+
+            //without giving a valid event here, re-opening the sensor doesn't work properly
+            IntPtr throwawayEvent = PreventDoubleInit.CreateEvent(IntPtr.Zero, true, false, null);
+
+            //hr = NuiWrapper.NuiImageStreamOpen(NuiWrapper.NuiImageType.DepthAndPlayerIndex, NuiWrapper.NuiImageResolution.Res320x240, 0, 2, IntPtr.Zero, out context.DepthHandle);
+            hr = NuiWrapper.NuiImageStreamOpen(NuiWrapper.NuiImageType.DepthAndPlayerIndex, NuiWrapper.NuiImageResolution.Res320x240, 0, 2, throwawayEvent, out context.DepthHandle);
             if (0 != hr) {
                 NuiWrapper.NuiShutdown(); // just in case
                 throw new Exception("Error opening depth stream: " + hr);
             }
 
-            hr = NuiWrapper.NuiImageStreamOpen(NuiWrapper.NuiImageType.Color, NuiWrapper.NuiImageResolution.Res640x480, 0, 2, IntPtr.Zero, out context.ImageHandle);
+            //without giving a valid event here, re-opening the sensor doesn't work properly
+            throwawayEvent = PreventDoubleInit.CreateEvent(IntPtr.Zero, true, false, null);
+            //hr = NuiWrapper.NuiImageStreamOpen(NuiWrapper.NuiImageType.Color, NuiWrapper.NuiImageResolution.Res640x480, 0, 2, IntPtr.Zero, out context.ImageHandle);
+            hr = NuiWrapper.NuiImageStreamOpen(NuiWrapper.NuiImageType.Color, NuiWrapper.NuiImageResolution.Res640x480, 0, 2, throwawayEvent, out context.ImageHandle);
             if (0 != hr) {
                 NuiWrapper.NuiShutdown(); // just in case
                 throw new Exception("Error opening image stream: " + hr);
             }
-            
-            PreventDoubleInit.SaveContext<NuiContext>(context);
+            //PreventDoubleInit.SaveContext<NuiContext>(context);
             PreventDoubleInit.MarkInited();
         }
         else {
@@ -401,15 +422,15 @@ class ZigInputKinectSDK : IZigInputReader
 
         Image = new ZigImage(640, 480);
         Depth = new ZigDepth(320, 240);
-        LabelMap = new ZigLabelMap(320, 240);
+        LabelMap = new ZigLabelMap(320, 240); 
         
 	}
 	
 	public void Update() 
 	{
-		if (0 == NuiWrapper.NuiSkeletonGetNextFrame(0, ref skeletonFrame)) {
-			ProcessNewSkeletonFrame();
-		}
+        if (0 == NuiWrapper.NuiSkeletonGetNextFrame(0, ref skeletonFrame)) {
+            ProcessNewSkeletonFrame();
+        }
 
         if (UpdateDepth) {
             IntPtr pDepthFrame;
@@ -422,20 +443,16 @@ class ZigInputKinectSDK : IZigInputReader
                 NuiWrapper.NuiLockedRect rect = depthTexture.LockRect();
                 Marshal.Copy(rect.ActualDataFinally, Depth.data, 0, Depth.data.Length);
                 depthTexture.UnlockRect();
-                if (UpdateLabelMap)
-                {
-                    for (int i = 0; i < Depth.data.Length; i++)
-                    {
+                if (UpdateLabelMap) {
+                    for (int i = 0; i < Depth.data.Length; i++) {
                         short d = Depth.data[i];
                         LabelMap.data[i] = (short)(d & PLAYER_MASK);
                         Depth.data[i] = (short)(d >> 3);
                     }
                 }
-                else
-                {
-                    for (int i = 0; i < Depth.data.Length; i++)
-                    {
-                        short d = Depth.data[i];                     
+                else {
+                    for (int i = 0; i < Depth.data.Length; i++) {
+                        short d = Depth.data[i];
                         Depth.data[i] = (short)(d >> 3);
                     }
                 }
@@ -463,13 +480,9 @@ class ZigInputKinectSDK : IZigInputReader
             }
         }
 	}
-	
+
 	public void Shutdown() {
-		// Unfortunately we cant call NuiShutdown because then NuiInitialize hangs
-		// the next time its called (this happens in the editor, dll's aren't unloaded
-		// and reloaded every time the game is launched). Oh well.
-		
-		//NuiWrapper.NuiShutdown()
+        NuiWrapper.NuiShutdown();
 	}
 	
 	
