@@ -30,29 +30,26 @@ class ZigInputOpenNI : IZigInputReader
             ll.Vendor = LicenseVendor;
             OpenNIContext.AddLicense(ll);
         }
-		
-		this.Depthmap = OpenNode(NodeType.Depth) as DepthGenerator;
-    
-		this.Users = OpenNode(NodeType.User) as UserGenerator;
-		this.Hands = OpenNode(NodeType.Hands) as HandsGenerator;
-		this.Gestures = OpenNode(NodeType.Gesture) as GestureGenerator;
-        this.userExitList = new List<int>();
-    
+        this.Depthmap = OpenNode(NodeType.Depth) as DepthGenerator;
 
-		this.OpenNIContext.GlobalMirror = Mirror;
+        this.Users = OpenNode(NodeType.User) as UserGenerator;
+        this.Hands = OpenNode(NodeType.Hands) as HandsGenerator;
+        this.Gestures = OpenNode(NodeType.Gesture) as GestureGenerator;
+        this.userExitList = new List<int>();
+
+
+        this.OpenNIContext.GlobalMirror = Mirror;
         mirrorState = Mirror;
-	
-		// users stuff
-		this.Users.SkeletonCapability.SetSkeletonProfile(SkeletonProfile.All);
+
+        // users stuff
+            this.Users.SkeletonCapability.SetSkeletonProfile(SkeletonProfile.All);
         this.Users.NewUser += new EventHandler<NewUserEventArgs>(userGenerator_NewUser);
         this.Users.LostUser += new EventHandler<UserLostEventArgs>(userGenerator_LostUser);
         this.Users.UserExit += new EventHandler<UserExitEventArgs>(userGenerator_UserExit);
         this.Users.UserReEnter += new EventHandler<UserReEnterEventArgs>(userGenerator_UserReEnter);
 
         this.Users.PoseDetectionCapability.PoseDetected += new EventHandler<PoseDetectedEventArgs>(poseDetectionCapability_PoseDetected);
-		this.Users.SkeletonCapability.CalibrationComplete += new EventHandler<CalibrationProgressEventArgs>(skeletonCapbility_CalibrationComplete);
-        
-        
+        this.Users.SkeletonCapability.CalibrationComplete += new EventHandler<CalibrationProgressEventArgs>(skeletonCapbility_CalibrationComplete);
 
         this.Depth = new ZigDepth(Depthmap.GetMetaData().XRes, Depthmap.GetMetaData().YRes);
         try {
@@ -62,7 +59,8 @@ class ZigInputOpenNI : IZigInputReader
         catch (OpenNI.GeneralException) {
             this.Imagemap = null;
             this.Image = new ZigImage(320, 240); //hard code the shit;
-        }
+        } 
+
         this.LabelMap = new ZigLabelMap(Depth.xres, Depth.yres);
         rawImageMap = new byte[Image.xres * Image.yres * 3];
 	}
@@ -168,14 +166,16 @@ class ZigInputOpenNI : IZigInputReader
 		ProductionNode ret=null;
 		try {
 			ret = OpenNIContext.FindExistingNode(nt);
-		} catch {
-			ret = OpenNIContext.CreateAnyProductionTree(nt, null);
-			Generator g = ret as Generator;
-			if (null != g) {
-				g.StartGenerating();
-			}
+		} catch { // if exception, ret is still null
 		}
-		return ret;
+        if (null == ret) {
+            ret = OpenNIContext.CreateAnyProductionTree(nt, null);
+            Generator g = ret as Generator;
+            if (null != g) {
+                g.StartGenerating();
+            }
+        }
+        return ret;
 	}
 		
 	void skeletonCapbility_CalibrationComplete(object sender, CalibrationProgressEventArgs e)
