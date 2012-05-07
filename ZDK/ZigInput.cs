@@ -141,6 +141,7 @@ interface IZigInputReader
     // misc
     Vector3 ConvertWorldToImageSpace(Vector3 worldPosition);
     Vector3 ConvertImageToWorldSpace(Vector3 imagePosition);
+    bool AlignDepthToRGB { get; set; }
 }
 
 public class ZigTrackedUser
@@ -287,6 +288,8 @@ public class ZigInput : MonoBehaviour {
     public static ZigDepth Depth { get; private set; }
     public static ZigImage Image { get; private set; }
     public static ZigLabelMap LabelMap { get; private set; }
+
+    public bool AlignDepthToRGB = false;
 	
 	//-------------------------------------------------------------------------
 	// MonoBehaviour logic

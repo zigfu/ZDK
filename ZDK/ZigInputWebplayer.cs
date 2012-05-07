@@ -150,7 +150,7 @@ class ZigInputWebplayer : IZigInputReader
         }
     }
 
-
+    public bool AlignDepthToRGB { get; set; } // unsupported for now
 
 	// needed for some disparity between the output of the JSON decoder and our zig input layer
 	static void Intify(ArrayList list, string property)

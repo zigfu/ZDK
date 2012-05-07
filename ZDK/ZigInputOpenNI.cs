@@ -59,7 +59,11 @@ class ZigInputOpenNI : IZigInputReader
         catch (OpenNI.GeneralException) {
             this.Imagemap = null;
             this.Image = new ZigImage(320, 240); //hard code the shit;
-        } 
+        }
+
+        if ((Imagemap != null) && AlignDepthToRGB) {
+            Depthmap.AlternativeViewpointCapability.SetViewpoint(Imagemap);
+        }
 
         this.LabelMap = new ZigLabelMap(Depth.xres, Depth.yres);
         rawImageMap = new byte[Image.xres * Image.yres * 3];
@@ -127,6 +131,10 @@ class ZigInputOpenNI : IZigInputReader
         Point3D pt = Depthmap.ConvertProjectiveToRealWorld(new Point3D(imagePosition.x, imagePosition.y, imagePosition.z));
         return new Vector3(pt.X, pt.Y, pt.Z);
     }
+
+    //TODO: make this updateable in runtime
+    public bool AlignDepthToRGB { get; set; }
+
     //-------------------------------------------------------------------------
 	// Internal stuff
 	//-------------------------------------------------------------------------

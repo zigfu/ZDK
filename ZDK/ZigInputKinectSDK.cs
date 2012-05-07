@@ -225,8 +225,8 @@ class NuiWrapper
     public enum NuiImageDigitalzoom
     {
         x1 = 0,
-    } 
-
+    }
+    [StructLayout(LayoutKind.Sequential)]
     public struct NuiImageViewArea 
     {
         NuiImageDigitalzoom DigitalZoom;
@@ -499,6 +499,8 @@ class ZigInputKinectSDK : IZigInputReader
 	public bool UpdateDepth { get; set; }
 	public bool UpdateImage { get; set; }
     public bool UpdateLabelMap { get; set; }
+
+    public bool AlignDepthToRGB { get; set; } //TODO: support
 
     public Vector3 ConvertWorldToImageSpace(Vector3 worldPosition)
     {
