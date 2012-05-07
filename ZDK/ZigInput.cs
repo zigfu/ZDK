@@ -289,7 +289,7 @@ public class ZigInput : MonoBehaviour {
     public static ZigImage Image { get; private set; }
     public static ZigLabelMap LabelMap { get; private set; }
 
-    public bool AlignDepthToRGB = false;
+    public static bool AlignDepthToRGB = false;
 	
 	//-------------------------------------------------------------------------
 	// MonoBehaviour logic
@@ -372,6 +372,7 @@ public class ZigInput : MonoBehaviour {
         reader.UpdateDepth = ZigInput.UpdateDepth;
         reader.UpdateImage = ZigInput.UpdateImage;
         reader.UpdateLabelMap = ZigInput.UpdateLabelMap;
+        reader.AlignDepthToRGB = ZigInput.AlignDepthToRGB;
 
         try {
             reader.Init();
