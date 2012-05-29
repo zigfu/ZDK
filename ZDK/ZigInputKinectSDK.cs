@@ -352,6 +352,9 @@ class NuiWrapper
     [DllImport("kinect10.dll")]
     public static extern UInt32 NuiImageStreamReleaseFrame(IntPtr Stream, ref NuiImageFrame ImageFrame);
 
+    [DllImport("kinect10.dll")]
+    public static extern UInt32 NuiImageStreamReleaseFrame(IntPtr Stream, IntPtr ImageFrame);
+
 	[DllImport("kinect10.dll")]
 	public static extern void NuiShutdown();
 
@@ -435,10 +438,11 @@ class ZigInputKinectSDK : IZigInputReader
         if (UpdateDepth) {
             IntPtr pDepthFrame;
             if (0 == NuiWrapper.NuiImageStreamGetNextFrame(context.DepthHandle, 0, out pDepthFrame)) {
+                
                 // deal with deref'ing/marshalling
                 depthFrame = (NuiWrapper.NuiImageFrame)Marshal.PtrToStructure(pDepthFrame, typeof(NuiWrapper.NuiImageFrame));
                 NuiWrapper.INuiFrameTexture depthTexture = new NuiWrapper.INuiFrameTexture(depthFrame.FrameTexture);
-
+                
                 // lock & copy the depth data
                 NuiWrapper.NuiLockedRect rect = depthTexture.LockRect();
                 Marshal.Copy(rect.ActualDataFinally, Depth.data, 0, Depth.data.Length);
@@ -457,7 +461,7 @@ class ZigInputKinectSDK : IZigInputReader
                     }
                 }
                 // release current frame
-                NuiWrapper.NuiImageStreamReleaseFrame(context.DepthHandle, ref depthFrame);
+                NuiWrapper.NuiImageStreamReleaseFrame(context.DepthHandle, pDepthFrame);
             }
         }
 
@@ -476,7 +480,7 @@ class ZigInputKinectSDK : IZigInputReader
                     Image.data[i].a = 255;
                 }
                 imageTexture.UnlockRect();
-                NuiWrapper.NuiImageStreamReleaseFrame(context.ImageHandle, ref imageFrame);
+                NuiWrapper.NuiImageStreamReleaseFrame(context.ImageHandle, pImageFrame);
             }
         }
 	}
