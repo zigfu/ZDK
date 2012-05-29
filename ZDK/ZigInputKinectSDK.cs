@@ -69,10 +69,10 @@ class PreventDoubleInit
     const string memoryMapName = "KinectReader_PreventDoubleInitMemoryMap";
 
     [DllImport("kernel32", SetLastError = true, CharSet = CharSet.Unicode)]
-    static extern IntPtr LoadLibrary(string lpFileName);
+    public static extern IntPtr LoadLibrary(string lpFileName);
 
     [DllImport("kernel32", CharSet = CharSet.Ansi, ExactSpelling = true, SetLastError = true)]
-    static extern UIntPtr GetProcAddress(IntPtr hModule, string procName);
+    public static extern UIntPtr GetProcAddress(IntPtr hModule, string procName);
 
 	public static bool IsSafeToInit() {
         if (IntPtr.Zero != OpenEvent(2, false, eventName)) return true;
@@ -113,6 +113,12 @@ struct NuiContext
 
 class NuiWrapper
 {
+    public static bool BoneOrientationsSupported()
+    {
+        IntPtr module = PreventDoubleInit.LoadLibrary("kinect10.dll");
+        if (module == IntPtr.Zero) return false;
+        return UIntPtr.Zero != PreventDoubleInit.GetProcAddress(module, "NuiSkeletonCalculateBoneOrientations");
+    }
     public enum NuiSkeletonTrackingState : uint
     {
         NotTracked = 0,
@@ -194,6 +200,42 @@ class NuiWrapper
         public float z;
         public float w;
     }
+
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct Matrix4AsArray
+    {
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
+        public float[] elems; //Order is 1,1, 1,2, 1,3 1,4 (meaning, column major)
+    }
+    [StructLayout(LayoutKind.Sequential)]
+    public struct Matrix4AsValues
+    {
+        public float M11;
+        public float M12;
+        public float M13;
+        public float M14;
+        public float M21;
+        public float M22;
+        public float M23;
+        public float M24;
+        public float M31;
+        public float M32;
+        public float M33;
+        public float M34;
+        public float M41;
+        public float M42;
+        public float M43;
+        public float M44;
+    }
+    [StructLayout(LayoutKind.Explicit)]
+    public struct Matrix4
+    {
+        [FieldOffset(0)]
+        public Matrix4AsArray arr;
+        [FieldOffset(0)]
+        public Matrix4AsValues val;
+    }
 	
     [StructLayout(LayoutKind.Sequential)]
     public struct NuiSkeletonData
@@ -220,6 +262,22 @@ class NuiWrapper
         public Vector4 NormalToGravity;
         [MarshalAs(UnmanagedType.ByValArray, SizeConst=6)]
         public NuiSkeletonData[] SkeletonData;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct NuiSkeletonBoneRotation 
+    {
+        public Matrix4 RotationMatrix;
+        public Vector4 RotationQuaternion;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct NuiSkeletonBoneOrientation 
+    {
+        public NuiSkeletonPositionIndex EndJoint;
+        public NuiSkeletonPositionIndex StartJoint;
+        public NuiSkeletonBoneRotation HierarchicalRotation;
+        public NuiSkeletonBoneRotation AbsoluteRotation;
     }
 
     public enum NuiImageDigitalzoom
@@ -366,6 +424,11 @@ class NuiWrapper
 
     [DllImport("kinect10.dll")]
     public static extern void NuiSetDeviceStatusCallback(UIntPtr funcPtr, IntPtr data);
+
+    // KinectSDK 1.5+
+    [DllImport("kinect10.dll")]
+    //TODO
+    public static extern UInt32 NuiSkeletonCalculateBoneOrientations(ref NuiSkeletonData skeleton, [Out] NuiSkeletonBoneOrientation[] orientations);
 }
 
 class ZigInputKinectSDK : IZigInputReader
@@ -375,6 +438,7 @@ class ZigInputKinectSDK : IZigInputReader
     NuiWrapper.NuiImageFrame depthFrame;
     NuiWrapper.NuiImageFrame imageFrame;
     NuiContext context;
+    bool SDKOrientations;
 	//-------------------------------------------------------------------------
 	// IZigInputReader interface
 	//-------------------------------------------------------------------------
@@ -422,7 +486,13 @@ class ZigInputKinectSDK : IZigInputReader
         else {
             context = PreventDoubleInit.LoadContext<NuiContext>();
         }
-
+        SDKOrientations = NuiWrapper.BoneOrientationsSupported();
+        if (SDKOrientations) {//TODO: remove
+            UnityEngine.Debug.Log("MS SDK >= 1.5 - supports bone orientations");
+        }
+        else {
+            UnityEngine.Debug.Log("MS SDK 1.0 - generating bone orientations internally");
+        }
         Image = new ZigImage(640, 480);
         Depth = new ZigDepth(320, 240);
         LabelMap = new ZigLabelMap(320, 240); 
@@ -564,6 +634,7 @@ class ZigInputKinectSDK : IZigInputReader
 	
 	void ProcessNewSkeletonFrame() {
 		NuiWrapper.NuiSkeletonData skel;
+        NuiWrapper.NuiSkeletonBoneOrientation[] orientations = new NuiWrapper.NuiSkeletonBoneOrientation[20]; //TODO: change from hard-coded?
 		// foreach user
 		List<ZigInputUser> users = new List<ZigInputUser>();
 		foreach (var skeleton in skeletonFrame.SkeletonData) {
@@ -579,6 +650,11 @@ class ZigInputKinectSDK : IZigInputReader
 				// we need this if we want to use the skeleton as a ref arg
 				skel = skeleton;
 
+                //TOOD: fix below
+                //if (SDKOrientations) {
+                //    NuiWrapper.NuiSkeletonCalculateBoneOrientations(ref skel, orientations);
+                //}
+
 				foreach (NuiWrapper.NuiSkeletonPositionIndex j in Enum.GetValues(typeof(NuiWrapper.NuiSkeletonPositionIndex))) {
 					// skip joints that aren't tracked
 					if (skeleton.SkeletonPositionTrackingState[(int)j] == NuiWrapper.NuiSkeletonPositionTrackingState.NotTracked) {
@@ -586,7 +662,26 @@ class ZigInputKinectSDK : IZigInputReader
 					}
 					ZigInputJoint joint = new ZigInputJoint(NuiToZig(j));
 					joint.Position = Vector4ToVector3(skeleton.SkeletonPositions[(int)j]);
-					joint.Rotation = getJointOrientation(ref skel, j);
+                    //if (SDKOrientations) {
+                        //TODO: make this work - it looks "okay" on a blockman and sucks on an avatar
+                        //NuiWrapper.Vector4 rot = orientations[(int)j].AbsoluteRotation.RotationQuaternion;
+                        //joint.Rotation.x = rot.x;
+                        //joint.Rotation.y = rot.y;
+                        //joint.Rotation.z = -rot.z;
+                        //joint.Rotation.w = -rot.w;
+                        //UnityEngine.Debug.Log(string.Format("Joint: {0}, bone: {1}->{2}", j, orientations[(int)j].StartJoint,orientations[(int)j].EndJoint));
+                        //NuiWrapper.Matrix4 rot2 = orientations[(int)j].AbsoluteRotation.RotationMatrix;
+                        //UnityEngine.Debug.Log(new Vector3(rot2.val.M13, rot2.val.M23, -rot2.val.M33));
+                        //UnityEngine.Debug.Log(joint.Rotation);
+                        //UnityEngine.Debug.Log(getJointOrientation(ref skel, j)*Vector3.forward);
+                        //NuiWrapper.Matrix4 rot = orientations[(int)j].AbsoluteRotation.RotationMatrix;
+
+                        //joint.Rotation = Quaternion.LookRotation(new Vector3(rot.val.M13, rot.val.M23, -rot.val.M33),
+                        //                                         new Vector3(rot.val.M12, rot.val.M22, -rot.val.M32));
+                    //}
+                    //else {
+                        joint.Rotation = getJointOrientation(ref skel, j);
+                    //}
 					joint.GoodRotation = true;
 					joint.GoodPosition = true;
 					joints.Add(joint);
