@@ -111,7 +111,7 @@ struct NuiContext
     public IntPtr ImageHandle;
 }
 
-class NuiWrapper
+public class NuiWrapper
 {
     public static bool BoneOrientationsSupported()
     {
@@ -280,6 +280,29 @@ class NuiWrapper
         public NuiSkeletonBoneRotation AbsoluteRotation;
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    public struct NuiTransformSmoothParameters
+    {
+        public float Smoothing;
+        public float Correction;
+        public float Prediction;
+        public float JitterRadius;
+        public float MaxDeviationRadius;
+
+        static public NuiTransformSmoothParameters Default {
+            get {
+                // defaults from docs
+                return new NuiTransformSmoothParameters() {
+                    Smoothing = 0.5f,
+                    Correction = 0.5f,
+                    Prediction = 0.5f,
+                    JitterRadius = 0.05f,
+                    MaxDeviationRadius = 0.04f
+                };
+            }
+        }
+    }
+
     public enum NuiImageDigitalzoom
     {
         x1 = 0,
@@ -407,8 +430,8 @@ class NuiWrapper
     [DllImport("kinect10.dll")]
     public static extern UInt32 NuiImageStreamGetNextFrame(IntPtr Stream, UInt32 MillisecondsToWait, out IntPtr ImageFrame);
 
-    [DllImport("kinect10.dll")]
-    public static extern UInt32 NuiImageStreamReleaseFrame(IntPtr Stream, ref NuiImageFrame ImageFrame);
+    //[DllImport("kinect10.dll")]
+    //public static extern UInt32 NuiImageStreamReleaseFrame(IntPtr Stream, ref NuiImageFrame ImageFrame);
 
     [DllImport("kinect10.dll")]
     public static extern UInt32 NuiImageStreamReleaseFrame(IntPtr Stream, IntPtr ImageFrame);
@@ -424,6 +447,9 @@ class NuiWrapper
 
     [DllImport("kinect10.dll")]
     public static extern void NuiSetDeviceStatusCallback(UIntPtr funcPtr, IntPtr data);
+
+    [DllImport("kinect10.dll")]
+    public static extern UInt32 NuiTransformSmooth([In][Out] NuiSkeletonFrame SkeletonFrame, [In][Optional] NuiTransformSmoothParameters SmoothingParams);
 
     // KinectSDK 1.5+
     [DllImport("kinect10.dll")]
