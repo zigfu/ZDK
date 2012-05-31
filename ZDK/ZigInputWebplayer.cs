@@ -9,8 +9,12 @@ class ZigInputWebplayer : IZigInputReader
     int XRes;
     int YRes;
 	// init/update/shutdown
-	public void Init()
+	public void Init(ZigInputSettings settings)
 	{
+        UpdateDepth = settings.UpdateDepth;
+        UpdateImage = settings.UpdateImage;
+        UpdateLabelMap = settings.UpdateLabelMap;
+
 		WebplayerReceiver receiver = WebplayerReceiver.Create();
         receiver.PluginSettingsEvent += new EventHandler<PluginSettingsEventArgs>(receiver_PluginSettingsEvent);
 		receiver.NewDataEvent += HandleReceiverNewDataEvent;

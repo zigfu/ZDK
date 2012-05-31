@@ -122,7 +122,7 @@ public class ZigLabelMap
 interface IZigInputReader
 {
 	// init/update/shutdown
-	void Init();
+	void Init(ZigInputSettings settings);
 	void Update();
 	void Shutdown();
 	
@@ -130,9 +130,9 @@ interface IZigInputReader
 	event EventHandler<NewUsersFrameEventArgs> NewUsersFrame;
 	
     // streams
-	bool UpdateDepth { get; set; }
-	bool UpdateImage { get; set; }
-    bool UpdateLabelMap { get; set; }
+    //bool UpdateDepth { get; set; }
+    //bool UpdateImage { get; set; }
+    //bool UpdateLabelMap { get; set; }
 
     ZigDepth Depth { get; }
     ZigImage Image { get; }
@@ -141,7 +141,7 @@ interface IZigInputReader
     // misc
     Vector3 ConvertWorldToImageSpace(Vector3 worldPosition);
     Vector3 ConvertImageToWorldSpace(Vector3 imagePosition);
-    bool AlignDepthToRGB { get; set; }
+    //bool AlignDepthToRGB { get; set; }
 }
 
 public class ZigTrackedUser
@@ -208,6 +208,43 @@ public enum ZigInputType {
 	KinectSDK,
 }
 
+[Serializable]
+public class ZigInputSettings
+{
+    public bool UpdateDepth = true;
+    public bool UpdateImage = false;
+    public bool UpdateLabelMap = false;
+    public ZigSettingsOpenNI OpenNISpecific;
+    public ZigSettingsKinectSDK KinectSDKSpecific;
+}
+
+[Serializable]
+public class ZigSettingsOpenNI
+{
+    public bool AlignDepthToRGB = false;
+    public bool Mirror = true;
+    public bool UseXML = false;
+    public string XMLPath = "SampleConfig.xml";
+}
+
+[Serializable]
+public class KinectSDKSmoothingParameters
+{
+    public float Smoothing = 0.5f;
+    public float Correction = 0.5f;
+    public float Prediction = 0.5f;
+    public float JitterRadius = 0.05f;
+    public float MaxDeviationRadius = 0.04f;
+}
+
+[Serializable]
+public class ZigSettingsKinectSDK
+{
+    public bool UseSDKSmoothing = false;
+    public KinectSDKSmoothingParameters SmoothingParameters = new KinectSDKSmoothingParameters();
+}
+
+
 
 //-----------------------------------------------------------------------------
 // ZigInput
@@ -262,9 +299,12 @@ public class ZigInput : MonoBehaviour {
 	// Singleton logic
 	//-------------------------------------------------------------------------
 		
-	public static bool UpdateDepth;
-	public static bool UpdateImage;
-    public static bool UpdateLabelMap;
+    //public static bool UpdateDepth;
+    //public static bool UpdateImage;
+    //public static bool UpdateLabelMap;
+    //public static bool AlignDepthToRGB;
+
+    public static ZigInputSettings Settings;
 
 	public static ZigInputType InputType = ZigInputType.Auto;
 	static ZigInput instance;
@@ -289,8 +329,6 @@ public class ZigInput : MonoBehaviour {
     public static ZigImage Image { get; private set; }
     public static ZigLabelMap LabelMap { get; private set; }
 
-    public static bool AlignDepthToRGB = false;
-	
 	//-------------------------------------------------------------------------
 	// MonoBehaviour logic
 	//-------------------------------------------------------------------------
@@ -369,13 +407,13 @@ public class ZigInput : MonoBehaviour {
     {
 
         reader.NewUsersFrame += HandleReaderNewUsersFrame;
-        reader.UpdateDepth = ZigInput.UpdateDepth;
-        reader.UpdateImage = ZigInput.UpdateImage;
-        reader.UpdateLabelMap = ZigInput.UpdateLabelMap;
-        reader.AlignDepthToRGB = ZigInput.AlignDepthToRGB;
+        //reader.UpdateDepth = ZigInput.UpdateDepth;
+        //reader.UpdateImage = ZigInput.UpdateImage;
+        //reader.UpdateLabelMap = ZigInput.UpdateLabelMap;
+        //reader.AlignDepthToRGB = ZigInput.AlignDepthToRGB;
 
         try {
-            reader.Init();
+            reader.Init(ZigInput.Settings);
             ZigInput.Depth = reader.Depth;
             ZigInput.Image = reader.Image;
             ZigInput.LabelMap = reader.LabelMap;

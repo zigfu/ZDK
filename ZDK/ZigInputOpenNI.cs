@@ -12,10 +12,17 @@ class ZigInputOpenNI : IZigInputReader
 	// IZigInputReader interface
 	//-------------------------------------------------------------------------
 	
-	public void Init() 
+	public void Init(ZigInputSettings settings) 
 	{	
 		//handList = new Dictionary<int, HandPoint>();
-		
+        UpdateDepth = settings.UpdateDepth;
+        UpdateImage = settings.UpdateImage;
+        UpdateLabelMap = settings.UpdateLabelMap;
+        AlignDepthToRGB = settings.OpenNISpecific.AlignDepthToRGB;
+        Mirror = settings.OpenNISpecific.Mirror;
+        LoadFromXML = settings.OpenNISpecific.UseXML;
+        XMLFilename = settings.OpenNISpecific.XMLPath;
+
         try {
 			ScriptNode sn;
             this.OpenNIContext = LoadFromXML ? Context.CreateFromXmlFile(XMLFilename, out sn) : new Context();

@@ -288,7 +288,13 @@ public class NuiWrapper
         public float Prediction;
         public float JitterRadius;
         public float MaxDeviationRadius;
-
+        public NuiTransformSmoothParameters(KinectSDKSmoothingParameters para) {
+            Smoothing = para.Smoothing;
+            Correction = para.Correction;
+            Prediction = para.Prediction;
+            JitterRadius = para.JitterRadius;
+            MaxDeviationRadius = para.MaxDeviationRadius;
+        }
         static public NuiTransformSmoothParameters Default {
             get {
                 // defaults from docs
@@ -449,7 +455,7 @@ public class NuiWrapper
     public static extern void NuiSetDeviceStatusCallback(UIntPtr funcPtr, IntPtr data);
 
     [DllImport("kinect10.dll")]
-    public static extern UInt32 NuiTransformSmooth([In][Out] NuiSkeletonFrame SkeletonFrame, [In][Optional] NuiTransformSmoothParameters SmoothingParams);
+    public static extern UInt32 NuiTransformSmooth(ref NuiSkeletonFrame SkeletonFrame, [In] NuiTransformSmoothParameters SmoothingParams);
 
     // KinectSDK 1.5+
     [DllImport("kinect10.dll")]
@@ -463,14 +469,22 @@ class ZigInputKinectSDK : IZigInputReader
 	NuiWrapper.NuiSkeletonFrame skeletonFrame = new NuiWrapper.NuiSkeletonFrame();
     NuiWrapper.NuiImageFrame depthFrame;
     NuiWrapper.NuiImageFrame imageFrame;
+    NuiWrapper.NuiTransformSmoothParameters smoothParameters;
     NuiContext context;
     bool SDKOrientations;
+    bool useSmoothing = false;
 	//-------------------------------------------------------------------------
 	// IZigInputReader interface
 	//-------------------------------------------------------------------------
 
-	public void Init()
+	public void Init(ZigInputSettings settings)
 	{
+        UpdateDepth = settings.UpdateDepth;
+        UpdateImage = settings.UpdateImage;
+        UpdateLabelMap = settings.UpdateLabelMap;
+        smoothParameters = new NuiWrapper.NuiTransformSmoothParameters(settings.KinectSDKSpecific.SmoothingParameters);
+        useSmoothing = settings.KinectSDKSpecific.UseSDKSmoothing;
+
         context = new NuiContext();
         
         UInt32 flags = 
@@ -663,6 +677,9 @@ class ZigInputKinectSDK : IZigInputReader
         NuiWrapper.NuiSkeletonBoneOrientation[] orientations = new NuiWrapper.NuiSkeletonBoneOrientation[20]; //TODO: change from hard-coded?
 		// foreach user
 		List<ZigInputUser> users = new List<ZigInputUser>();
+        if (useSmoothing) {
+            NuiWrapper.NuiTransformSmooth(ref skeletonFrame, smoothParameters);
+        }
 		foreach (var skeleton in skeletonFrame.SkeletonData) {
 	
 			if (skeleton.TrackingState == NuiWrapper.NuiSkeletonTrackingState.NotTracked) {
