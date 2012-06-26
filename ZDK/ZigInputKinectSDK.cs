@@ -704,6 +704,7 @@ class ZigInputKinectSDK : IZigInputReader
 						continue;
 					}
 					ZigInputJoint joint = new ZigInputJoint(NuiToZig(j));
+                    joint.Inferred = skeleton.SkeletonPositionTrackingState[(int)j] == NuiWrapper.NuiSkeletonPositionTrackingState.Inferred;
 					joint.Position = Vector4ToVector3(skeleton.SkeletonPositions[(int)j]);
                     //if (SDKOrientations) {
                         //TODO: make this work - it looks "okay" on a blockman and sucks on an avatar

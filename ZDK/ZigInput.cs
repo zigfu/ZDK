@@ -46,17 +46,19 @@ public class ZigInputJoint
 	public Quaternion Rotation;
 	public bool GoodPosition;
 	public bool GoodRotation;
+    public bool Inferred;
 	
 	public ZigInputJoint(ZigJointId id) :
-		this(id, Vector3.zero, Quaternion.identity) {
+		this(id, Vector3.zero, Quaternion.identity, false) {
             GoodPosition = false;
             GoodRotation = false;
     }
 	
-	public ZigInputJoint(ZigJointId id, Vector3 position, Quaternion rotation) {
+	public ZigInputJoint(ZigJointId id, Vector3 position, Quaternion rotation, bool inferred) {
 		Id = id;
 		Position = position;
 		Rotation = rotation;
+        Inferred = inferred;
 	}
 }
 
@@ -412,17 +414,17 @@ public class ZigInput : MonoBehaviour {
         //reader.UpdateLabelMap = ZigInput.UpdateLabelMap;
         //reader.AlignDepthToRGB = ZigInput.AlignDepthToRGB;
 
-        try {
+        //try {
             reader.Init(ZigInput.Settings);
             ZigInput.Depth = reader.Depth;
             ZigInput.Image = reader.Image;
             ZigInput.LabelMap = reader.LabelMap;
             return true;
-        }
-        catch (Exception ex) {
-            Debug.LogWarning(ex.Message);
-            return false;
-        }
+        //}
+        //catch (Exception ex) {
+        //    Debug.LogWarning(ex.Message);
+        //    return false;
+        //}
     }
 
     // Update is called once per frame
