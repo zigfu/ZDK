@@ -27,6 +27,7 @@ class ZigInputOpenNI : IZigInputReader
 			ScriptNode sn;
             this.OpenNIContext = LoadFromXML ? Context.CreateFromXmlFile(XMLFilename, out sn) : new Context();
         } catch (Exception ex) {
+            Debug.LogError(ex);
             throw new Exception("Error opening OpenNI context: " + ex.Message);
         }
 
@@ -44,9 +45,10 @@ class ZigInputOpenNI : IZigInputReader
         this.Gestures = OpenNode(NodeType.Gesture) as GestureGenerator;
         this.userExitList = new List<int>();
 
-
-        this.OpenNIContext.GlobalMirror = Mirror;
-        mirrorState = Mirror;
+        if (!LoadFromXML) {
+            this.OpenNIContext.GlobalMirror = Mirror;
+            mirrorState = Mirror;
+        }
 
         // users stuff
             this.Users.SkeletonCapability.SetSkeletonProfile(SkeletonProfile.All);
@@ -68,7 +70,7 @@ class ZigInputOpenNI : IZigInputReader
             this.Image = new ZigImage(320, 240); //hard code the shit;
         }
 
-        if ((Imagemap != null) && AlignDepthToRGB) {
+        if ((Imagemap != null) && AlignDepthToRGB && (!LoadFromXML)) {
             Depthmap.AlternativeViewpointCapability.SetViewpoint(Imagemap);
         }
 
@@ -80,7 +82,7 @@ class ZigInputOpenNI : IZigInputReader
 	{
 		if (null == OpenNIContext) return;
 		
-        if (Mirror != mirrorState) {
+        if ((!LoadFromXML) && (Mirror != mirrorState)) {
             OpenNIContext.GlobalMirror = Mirror;
             mirrorState = Mirror;
         }
