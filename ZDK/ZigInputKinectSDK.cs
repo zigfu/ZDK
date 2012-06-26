@@ -527,12 +527,12 @@ class ZigInputKinectSDK : IZigInputReader
             context = PreventDoubleInit.LoadContext<NuiContext>();
         }
         SDKOrientations = NuiWrapper.BoneOrientationsSupported();
-        if (SDKOrientations) {//TODO: remove
-            UnityEngine.Debug.Log("MS SDK >= 1.5 - supports bone orientations");
-        }
-        else {
-            UnityEngine.Debug.Log("MS SDK 1.0 - generating bone orientations internally");
-        }
+        //if (SDKOrientations) {//TODO: remove
+        //    UnityEngine.Debug.Log("MS SDK >= 1.5 - supports bone orientations");
+        //}
+        //else {
+        //    UnityEngine.Debug.Log("MS SDK 1.0 - generating bone orientations internally");
+        //}
         Image = new ZigImage(640, 480);
         Depth = new ZigDepth(320, 240);
         LabelMap = new ZigLabelMap(320, 240); 
