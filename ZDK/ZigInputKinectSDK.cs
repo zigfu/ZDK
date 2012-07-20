@@ -449,7 +449,7 @@ public class NuiWrapper
     public static extern Vector4 NuiTransformDepthImageToSkeleton(int DepthX, int DepthY, ushort DepthValue);
 
     [DllImport("kinect10.dll")]
-    public static extern void NuiTransformSkeletonToDepthImage(Vector4 vPoint, out float pfDepthX, out float pfDepthY);
+    public static extern void NuiTransformSkeletonToDepthImage([MarshalAs(UnmanagedType.Struct)] Vector4 vPoint, out float pfDepthX, out float pfDepthY);
 
     [DllImport("kinect10.dll")]
     public static extern void NuiSetDeviceStatusCallback(UIntPtr funcPtr, IntPtr data);
