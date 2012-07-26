@@ -342,20 +342,22 @@ public class ZigInput : MonoBehaviour {
     IZigInputReader reader;
 	public bool ReaderInited { get; private set; }
     public bool kinectSDK = false;
-	public void EnableNearMode()
+	public void SetNearMode(bool NearMode)
     {
         if (!kinectSDK)
             return;       
         ZigInputKinectSDK r = reader as ZigInputKinectSDK;
-        r.EnableNearMode();        
-    }
-    public void DisableNearMode()
+        r.SetNearMode(NearMode);        
+    }  
+    public void SetSkeletonTrackingSettings(bool SeatedMode, bool TrackSkeletonInNearMode)
     {
         if (!kinectSDK)
-            return;       
+            return;
         ZigInputKinectSDK r = reader as ZigInputKinectSDK;
-        r.DisableNearMode();        
+        r.SetSkeletonTrackingSettings(SeatedMode, TrackSkeletonInNearMode);     
     }
+
+
 	void Awake() {
 		#if WATERMARK_OMERCY
 		watermarkTexture = LoadTextureFromResource("ZDK.wm.png");

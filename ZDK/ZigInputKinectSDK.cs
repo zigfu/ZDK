@@ -485,6 +485,9 @@ public class NuiWrapper
     [DllImport("kinect10.dll")]
     public static extern UInt32 NuiImageStreamSetImageFrameFlags(IntPtr hStream, UInt32 flags);
 
+    [DllImport("kinect10.dll")]
+    public static extern UInt32 NuiImageStreamGetImageFrameFlags(IntPtr hStream, out UInt32 flags);
+
     // KinectSDK 1.5+
     //[DllImport("kinect10.dll")]
     //TODO
@@ -504,14 +507,20 @@ class ZigInputKinectSDK : IZigInputReader
 	//-------------------------------------------------------------------------
 	// IZigInputReader interface
 	//-------------------------------------------------------------------------
-    public void EnableNearMode()
+    
+    public void SetNearMode(bool NearMode)
     {
-        NuiWrapper.NuiImageStreamSetImageFrameFlags(context.DepthHandle, (uint)NuiWrapper.NuiImageFlag.NUI_IMAGE_STREAM_FLAG_ENABLE_NEAR_MODE);
+        NuiWrapper.NuiImageStreamSetImageFrameFlags(context.DepthHandle, NearMode ? (uint)NuiWrapper.NuiImageFlag.NUI_IMAGE_STREAM_FLAG_ENABLE_NEAR_MODE : 0);
     }
-    public void DisableNearMode()
+
+    public void SetSkeletonTrackingSettings(bool SeatedMode, bool TrackSkeletonInNearMode)
     {
-        NuiWrapper.NuiImageStreamSetImageFrameFlags(context.DepthHandle, 0);
+        IntPtr throwawayEvent = PreventDoubleInit.CreateEvent(IntPtr.Zero, true, false, null);
+        uint flags = SeatedMode ? (uint)NuiWrapper.NuiSkeletonFlag.NUI_SKELETON_TRACKING_FLAG_ENABLE_SEATED_SUPPORT : 0;
+        flags |= TrackSkeletonInNearMode ? (uint)NuiWrapper.NuiSkeletonFlag.NUI_SKELETON_TRACKING_FLAG_ENABLE_IN_NEAR_RANGE : 0;
+        NuiWrapper.NuiSkeletonTrackingEnable(throwawayEvent, flags);
     }
+
 	public void Init(ZigInputSettings settings)
 	{
         UpdateDepth = settings.UpdateDepth;
