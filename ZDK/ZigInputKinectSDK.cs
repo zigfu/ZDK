@@ -167,6 +167,18 @@ public class NuiWrapper
 		UsesDepth 				= 0x00000020,
 	}
 
+    public enum NuiImageFlag : uint
+    {
+        NUI_IMAGE_STREAM_FLAG_ENABLE_NEAR_MODE = 0x00020000,
+    }
+    public enum NuiSkeletonFlag : uint
+    {
+        NUI_SKELETON_TRACKING_FLAG_SUPPRESS_NO_FRAME_DATA       = 0x00000001,
+        NUI_SKELETON_TRACKING_FLAG_TITLE_SETS_TRACKED_SKELETONS = 0x00000002,
+        NUI_SKELETON_TRACKING_FLAG_ENABLE_SEATED_SUPPORT        = 0x00000004,
+        NUI_SKELETON_TRACKING_FLAG_ENABLE_IN_NEAR_RANGE        = 0x00000008,
+    }
+
     public enum NuiImageType
     {
         DepthAndPlayerIndex = 0,
@@ -462,6 +474,17 @@ public class NuiWrapper
 
     [DllImport("kinect10.dll")]
     public static extern UInt32 NuiCameraElevationSetAngle(long lAngleDegrees);
+
+    [DllImport("kinect10.dll")]
+    public static extern UInt32 NuiCameraElevationGetAngle(out long plAngleDegrees);
+
+
+    [DllImport("kinect10.dll")]
+    public static extern UInt32 NuiSkeletonTrackingEnable(IntPtr nextSkeletonEvent, UInt32 flags);
+
+    [DllImport("kinect10.dll")]
+    public static extern UInt32 NuiImageStreamSetImageFrameFlags(IntPtr hStream, UInt32 flags);
+
     // KinectSDK 1.5+
     //[DllImport("kinect10.dll")]
     //TODO
@@ -481,7 +504,14 @@ class ZigInputKinectSDK : IZigInputReader
 	//-------------------------------------------------------------------------
 	// IZigInputReader interface
 	//-------------------------------------------------------------------------
-
+    public void EnableNearMode()
+    {
+        NuiWrapper.NuiImageStreamSetImageFrameFlags(context.DepthHandle, (uint)NuiWrapper.NuiImageFlag.NUI_IMAGE_STREAM_FLAG_ENABLE_NEAR_MODE);
+    }
+    public void DisableNearMode()
+    {
+        NuiWrapper.NuiImageStreamSetImageFrameFlags(context.DepthHandle, 0);
+    }
 	public void Init(ZigInputSettings settings)
 	{
         UpdateDepth = settings.UpdateDepth;
@@ -515,9 +545,10 @@ class ZigInputKinectSDK : IZigInputReader
 
             //without giving a valid event here, re-opening the sensor doesn't work properly
             IntPtr throwawayEvent = PreventDoubleInit.CreateEvent(IntPtr.Zero, true, false, null);
-
+            
             //hr = NuiWrapper.NuiImageStreamOpen(NuiWrapper.NuiImageType.DepthAndPlayerIndex, NuiWrapper.NuiImageResolution.Res320x240, 0, 2, IntPtr.Zero, out context.DepthHandle);
-            hr = NuiWrapper.NuiImageStreamOpen(NuiWrapper.NuiImageType.DepthAndPlayerIndex, NuiWrapper.NuiImageResolution.Res320x240, 0, 2, throwawayEvent, out context.DepthHandle);
+            flags = settings.KinectSDKSpecific.NearMode ? (uint)NuiWrapper.NuiImageFlag.NUI_IMAGE_STREAM_FLAG_ENABLE_NEAR_MODE : 0;
+            hr = NuiWrapper.NuiImageStreamOpen(NuiWrapper.NuiImageType.DepthAndPlayerIndex, NuiWrapper.NuiImageResolution.Res320x240, flags, 2, throwawayEvent, out context.DepthHandle);
             if (0 != hr) {
                 NuiWrapper.NuiShutdown(); // just in case
                 throw new Exception("Error opening depth stream: " + hr);
@@ -526,11 +557,17 @@ class ZigInputKinectSDK : IZigInputReader
             //without giving a valid event here, re-opening the sensor doesn't work properly
             throwawayEvent = PreventDoubleInit.CreateEvent(IntPtr.Zero, true, false, null);
             //hr = NuiWrapper.NuiImageStreamOpen(NuiWrapper.NuiImageType.Color, NuiWrapper.NuiImageResolution.Res640x480, 0, 2, IntPtr.Zero, out context.ImageHandle);
+         
             hr = NuiWrapper.NuiImageStreamOpen(NuiWrapper.NuiImageType.Color, NuiWrapper.NuiImageResolution.Res640x480, 0, 2, throwawayEvent, out context.ImageHandle);
             if (0 != hr) {
                 NuiWrapper.NuiShutdown(); // just in case
                 throw new Exception("Error opening image stream: " + hr);
             }
+
+            throwawayEvent = PreventDoubleInit.CreateEvent(IntPtr.Zero, true, false, null);
+            flags = settings.KinectSDKSpecific.SeatedMode ? (uint)NuiWrapper.NuiSkeletonFlag.NUI_SKELETON_TRACKING_FLAG_ENABLE_SEATED_SUPPORT : 0;
+            flags |= settings.KinectSDKSpecific.TrackSkeletonInNearMode ? (uint)NuiWrapper.NuiSkeletonFlag.NUI_SKELETON_TRACKING_FLAG_ENABLE_IN_NEAR_RANGE : 0;
+            NuiWrapper.NuiSkeletonTrackingEnable(throwawayEvent, flags);
             //PreventDoubleInit.SaveContext<NuiContext>(context);
             PreventDoubleInit.MarkInited();
         }

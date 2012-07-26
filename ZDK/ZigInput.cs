@@ -243,6 +243,9 @@ public class KinectSDKSmoothingParameters
 public class ZigSettingsKinectSDK
 {
     public bool UseSDKSmoothing = false;
+    public bool SeatedMode = false;
+    public bool NearMode = false;
+    public bool TrackSkeletonInNearMode = false;
     public KinectSDKSmoothingParameters SmoothingParameters = new KinectSDKSmoothingParameters();    
 }
 
@@ -308,7 +311,7 @@ public class ZigInput : MonoBehaviour {
 
     public static ZigInputSettings Settings;
 
-	public static ZigInputType InputType = ZigInputType.Auto;
+	public static ZigInputType InputType = ZigInputType.Auto;    
 	static ZigInput instance;
 	public static ZigInput Instance
 	{
@@ -338,7 +341,21 @@ public class ZigInput : MonoBehaviour {
 	public List<GameObject> listeners = new List<GameObject>();
     IZigInputReader reader;
 	public bool ReaderInited { get; private set; }
-	
+    public bool kinectSDK = false;
+	public void EnableNearMode()
+    {
+        if (!kinectSDK)
+            return;       
+        ZigInputKinectSDK r = reader as ZigInputKinectSDK;
+        r.EnableNearMode();        
+    }
+    public void DisableNearMode()
+    {
+        if (!kinectSDK)
+            return;       
+        ZigInputKinectSDK r = reader as ZigInputKinectSDK;
+        r.DisableNearMode();        
+    }
 	void Awake() {
 		#if WATERMARK_OMERCY
 		watermarkTexture = LoadTextureFromResource("ZDK.wm.png");
@@ -361,6 +378,7 @@ public class ZigInput : MonoBehaviour {
                     if (StartReader())
                     {
                         ReaderInited = true; // KinectSDK
+                        kinectSDK = true;
                     }
                     else
                     {
@@ -390,11 +408,12 @@ public class ZigInput : MonoBehaviour {
                 {
                     print("Trying to open Kinect sensor using MS Kinect SDK");
                     reader = (new ZigInputKinectSDK()) as IZigInputReader;
+                    kinectSDK = true;
                 }
 
                 if (StartReader())
                 {
-                    ReaderInited = true; // KinectSDK
+                    ReaderInited = true;
                 }
                 else
                 {
