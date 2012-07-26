@@ -51,7 +51,7 @@ class ZigInputOpenNI : IZigInputReader
         }
 
         // users stuff
-            this.Users.SkeletonCapability.SetSkeletonProfile(SkeletonProfile.All);
+        this.Users.SkeletonCapability.SetSkeletonProfile(SkeletonProfile.All);
         this.Users.NewUser += new EventHandler<NewUserEventArgs>(userGenerator_NewUser);
         this.Users.LostUser += new EventHandler<UserLostEventArgs>(userGenerator_LostUser);
         this.Users.UserExit += new EventHandler<UserExitEventArgs>(userGenerator_UserExit);

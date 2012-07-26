@@ -1,4 +1,4 @@
-#define WATERMARK_OMERCY
+//#define WATERMARK_OMERCY
 
 using UnityEngine;
 using System;
@@ -243,7 +243,7 @@ public class KinectSDKSmoothingParameters
 public class ZigSettingsKinectSDK
 {
     public bool UseSDKSmoothing = false;
-    public KinectSDKSmoothingParameters SmoothingParameters = new KinectSDKSmoothingParameters();
+    public KinectSDKSmoothingParameters SmoothingParameters = new KinectSDKSmoothingParameters();    
 }
 
 

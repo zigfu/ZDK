@@ -244,6 +244,7 @@ public class NuiWrapper
         public UInt32 TrackingId;
         public UInt32 EnrollmentIndex;
         public UInt32 UserIndex;
+        [MarshalAs(UnmanagedType.Struct)] 
         public Vector4 Position;
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 20)]
         public Vector4[] SkeletonPositions;
@@ -254,13 +255,15 @@ public class NuiWrapper
 
     [StructLayout(LayoutKind.Sequential)]
     public struct NuiSkeletonFrame
-    {
+    {        
         public LARGE_INTEGER TimeStamp;
         public UInt32 FrameNumber;
         public UInt32 Flags;
+        [MarshalAs(UnmanagedType.Struct)] 
         public Vector4 FloorClipPlane;
+        [MarshalAs(UnmanagedType.Struct)] 
         public Vector4 NormalToGravity;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst=6)]
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst=6)]        
         public NuiSkeletonData[] SkeletonData;
     }
 
@@ -288,7 +291,7 @@ public class NuiWrapper
         public float Prediction;
         public float JitterRadius;
         public float MaxDeviationRadius;
-        public NuiTransformSmoothParameters(KinectSDKSmoothingParameters para) {
+    }/*     public NuiTransformSmoothParameters(KinectSDKSmoothingParameters para) {
             Smoothing = para.Smoothing;
             Correction = para.Correction;
             Prediction = para.Prediction;
@@ -308,7 +311,7 @@ public class NuiWrapper
             }
         }
     }
-
+    */
     public enum NuiImageDigitalzoom
     {
         x1 = 0,
@@ -453,14 +456,16 @@ public class NuiWrapper
 
     [DllImport("kinect10.dll")]
     public static extern void NuiSetDeviceStatusCallback(UIntPtr funcPtr, IntPtr data);
+    
+    [DllImport("kinect10.dll")]
+    public static extern UInt32 NuiTransformSmooth([In, Out]  NuiSkeletonFrame SkeletonFrame, [In] NuiTransformSmoothParameters SmoothingParams);
 
     [DllImport("kinect10.dll")]
-    public static extern UInt32 NuiTransformSmooth(ref NuiSkeletonFrame SkeletonFrame, [In] NuiTransformSmoothParameters SmoothingParams);
-
+    public static extern UInt32 NuiCameraElevationSetAngle(long lAngleDegrees);
     // KinectSDK 1.5+
-    [DllImport("kinect10.dll")]
+    //[DllImport("kinect10.dll")]
     //TODO
-    public static extern UInt32 NuiSkeletonCalculateBoneOrientations(ref NuiSkeletonData skeleton, [Out] NuiSkeletonBoneOrientation[] orientations);
+    //public static extern UInt32 NuiSkeletonCalculateBoneOrientations([In] NuiSkeletonData skeleton, [Out] NuiSkeletonBoneOrientation[] orientations);
 }
 
 class ZigInputKinectSDK : IZigInputReader
@@ -482,7 +487,13 @@ class ZigInputKinectSDK : IZigInputReader
         UpdateDepth = settings.UpdateDepth;
         UpdateImage = settings.UpdateImage;
         UpdateLabelMap = settings.UpdateLabelMap;
-        smoothParameters = new NuiWrapper.NuiTransformSmoothParameters(settings.KinectSDKSpecific.SmoothingParameters);
+        smoothParameters = new NuiWrapper.NuiTransformSmoothParameters(); //(settings.KinectSDKSpecific.SmoothingParameters);
+        smoothParameters.Correction = settings.KinectSDKSpecific.SmoothingParameters.Correction;
+        smoothParameters.JitterRadius = settings.KinectSDKSpecific.SmoothingParameters.JitterRadius;
+        smoothParameters.MaxDeviationRadius = settings.KinectSDKSpecific.SmoothingParameters.MaxDeviationRadius;
+        smoothParameters.Prediction = settings.KinectSDKSpecific.SmoothingParameters.Prediction;
+        smoothParameters.Smoothing = settings.KinectSDKSpecific.SmoothingParameters.Smoothing;
+
         useSmoothing = settings.KinectSDKSpecific.UseSDKSmoothing;
 
         context = new NuiContext();
@@ -540,7 +551,7 @@ class ZigInputKinectSDK : IZigInputReader
 	}
 	
 	public void Update() 
-	{
+	{        
         if (0 == NuiWrapper.NuiSkeletonGetNextFrame(0, ref skeletonFrame)) {
             ProcessNewSkeletonFrame();
         }
@@ -677,15 +688,23 @@ class ZigInputKinectSDK : IZigInputReader
         NuiWrapper.NuiSkeletonBoneOrientation[] orientations = new NuiWrapper.NuiSkeletonBoneOrientation[20]; //TODO: change from hard-coded?
 		// foreach user
 		List<ZigInputUser> users = new List<ZigInputUser>();
+        NuiWrapper.NuiSkeletonFrame skelFrame;
+        skelFrame = skeletonFrame;
         if (useSmoothing) {
-            NuiWrapper.NuiTransformSmooth(ref skeletonFrame, smoothParameters);
+            //TODO Make functional
+
+            //UnityEngine.Debug.Log(string.Format("Smoothing: {0} Correction: {1} Prediction: {2} JitterRadius: {3} MaxDeviationRadius: {4}", smoothParameters.Smoothing, smoothParameters.Correction, smoothParameters.Prediction, smoothParameters.JitterRadius, smoothParameters.MaxDeviationRadius));
+            //UnityEngine.Debug.Log("Smoothing not functional");                        
+            NuiWrapper.NuiTransformSmooth(skelFrame, smoothParameters);
+            //AUnityEngine.Debug.Log("Did we crash yet?");
         }
-		foreach (var skeleton in skeletonFrame.SkeletonData) {
+        foreach (var skeleton in skelFrame.SkeletonData)
+        {
 	
 			if (skeleton.TrackingState == NuiWrapper.NuiSkeletonTrackingState.NotTracked) {
 				continue;
 			}
-
+           
 			// skeleton data
 			List<ZigInputJoint> joints = new List<ZigInputJoint>();
 			bool tracked = skeleton.TrackingState == NuiWrapper.NuiSkeletonTrackingState.Tracked;
