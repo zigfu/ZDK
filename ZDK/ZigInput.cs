@@ -374,8 +374,13 @@ public class ZigInput : MonoBehaviour {
             if (ZigInput.InputType == ZigInputType.Auto)
             {
                     print("Trying to open Kinect sensor using MS Kinect SDK");
-                    reader = (new ZigInputKinectSDK()) as IZigInputReader;
+                   
+					print("Note: Microsoft's Kinect SDK can only be used in one process at a time. Please quit any other processes using the Microsoft Kinect");
+					print("This also means you must quit the Unity Editor before using any compiled product");
+						
 
+					reader = (new ZigInputKinectSDK()) as IZigInputReader;
+					
 
                     if (StartReader())
                     {
@@ -384,7 +389,7 @@ public class ZigInput : MonoBehaviour {
                     }
                     else
                     {
-                        print("failed opening Kinect SDK sensor (if you're using Kinect SDK, please unplug the sensor, restart Unity and try again)");
+                        print("failed opening Kinect SDK sensor (if you intend to use the Microsoft Kinect SDK, please unplug the sensor, restart Unity and try again)");
                         print("Trying to open sensor using OpenNI");
 
                         reader = (new ZigInputOpenNI()) as IZigInputReader;
@@ -429,23 +434,25 @@ public class ZigInput : MonoBehaviour {
     private bool StartReader()
     {
 
-        reader.NewUsersFrame += HandleReaderNewUsersFrame;
+        
         //reader.UpdateDepth = ZigInput.UpdateDepth;
         //reader.UpdateImage = ZigInput.UpdateImage;
         //reader.UpdateLabelMap = ZigInput.UpdateLabelMap;
         //reader.AlignDepthToRGB = ZigInput.AlignDepthToRGB;
 
-        //try {
+        try {
             reader.Init(ZigInput.Settings);
+			reader.NewUsersFrame += HandleReaderNewUsersFrame;
             ZigInput.Depth = reader.Depth;
             ZigInput.Image = reader.Image;
             ZigInput.LabelMap = reader.LabelMap;
             return true;
-        //}
-        //catch (Exception ex) {
-        //    Debug.LogWarning(ex.Message);
-        //    return false;
-        //}
+        }
+        catch (Exception ex) {
+			print("Exception while attempting to start reader:");
+            Debug.LogWarning(ex.Message);
+            return false;
+        }
     }
 
     // Update is called once per frame

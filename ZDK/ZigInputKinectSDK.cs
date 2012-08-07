@@ -741,7 +741,7 @@ class ZigInputKinectSDK : IZigInputReader
 
             //UnityEngine.Debug.Log(string.Format("Smoothing: {0} Correction: {1} Prediction: {2} JitterRadius: {3} MaxDeviationRadius: {4}", smoothParameters.Smoothing, smoothParameters.Correction, smoothParameters.Prediction, smoothParameters.JitterRadius, smoothParameters.MaxDeviationRadius));
             //UnityEngine.Debug.Log("Smoothing not functional");                        
-            NuiWrapper.NuiTransformSmooth(skelFrame, smoothParameters);
+            //NuiWrapper.NuiTransformSmooth(skelFrame, smoothParameters);
             //AUnityEngine.Debug.Log("Did we crash yet?");
         }
         foreach (var skeleton in skelFrame.SkeletonData)
