@@ -492,6 +492,9 @@ public class NuiWrapper
     //[DllImport("kinect10.dll")]
     //TODO
     //public static extern UInt32 NuiSkeletonCalculateBoneOrientations([In] NuiSkeletonData skeleton, [Out] NuiSkeletonBoneOrientation[] orientations);
+
+    [DllImport("kinect10.dll")]
+    public static extern UInt32 NuiImageGetColorPixelCoordinatesFromDepthPixel(NuiImageResolution Resolution, ref NuiImageViewArea ViewArea, int DepthX, int DepthY, ushort DepthValue, out int ColorX, out int ColorY);
 }
 
 class ZigInputKinectSDK : IZigInputReader
@@ -504,6 +507,7 @@ class ZigInputKinectSDK : IZigInputReader
     NuiContext context;
     bool SDKOrientations;
     bool useSmoothing = false;
+    public short[] registrationBuffer;
 	//-------------------------------------------------------------------------
 	// IZigInputReader interface
 	//-------------------------------------------------------------------------
@@ -526,6 +530,7 @@ class ZigInputKinectSDK : IZigInputReader
         UpdateDepth = settings.UpdateDepth;
         UpdateImage = settings.UpdateImage;
         UpdateLabelMap = settings.UpdateLabelMap;
+        AlignDepthToRGB = settings.AlignDepthToRGB;
         smoothParameters = new NuiWrapper.NuiTransformSmoothParameters(); //(settings.KinectSDKSpecific.SmoothingParameters);
         smoothParameters.Correction = settings.KinectSDKSpecific.SmoothingParameters.Correction;
         smoothParameters.JitterRadius = settings.KinectSDKSpecific.SmoothingParameters.JitterRadius;
@@ -592,14 +597,41 @@ class ZigInputKinectSDK : IZigInputReader
         //}
         Image = new ZigImage(640, 480);
         Depth = new ZigDepth(320, 240);
-        LabelMap = new ZigLabelMap(320, 240); 
-        
+        LabelMap = new ZigLabelMap(320, 240);
+
+        registrationBuffer = new short[320 * 240];
 	}
-	
+
+    NuiWrapper.NuiImageResolution lastResolution;
+    NuiWrapper.NuiImageViewArea lastViewArea;
+
 	public void Update() 
 	{        
         if (0 == NuiWrapper.NuiSkeletonGetNextFrame(0, ref skeletonFrame)) {
             ProcessNewSkeletonFrame();
+        }
+
+        if (UpdateImage) {
+            IntPtr pImageFrame;
+            if (0 == NuiWrapper.NuiImageStreamGetNextFrame(context.ImageHandle, 0, out pImageFrame)) {
+                imageFrame = (NuiWrapper.NuiImageFrame)Marshal.PtrToStructure(pImageFrame, typeof(NuiWrapper.NuiImageFrame));
+                NuiWrapper.INuiFrameTexture imageTexture = new NuiWrapper.INuiFrameTexture(imageFrame.FrameTexture);
+
+                NuiWrapper.NuiLockedRect rect = imageTexture.LockRect();
+                NuiWrapper.ColorBuffer colors = (NuiWrapper.ColorBuffer)Marshal.PtrToStructure(rect.ActualDataFinally, typeof(NuiWrapper.ColorBuffer));
+                for (int i = 0; i < Image.data.Length; i++) {
+                    Image.data[i].r = colors.data[i].r;
+                    Image.data[i].g = colors.data[i].g;
+                    Image.data[i].b = colors.data[i].b;
+                    Image.data[i].a = 255;
+                }
+                imageTexture.UnlockRect();
+
+                lastResolution = imageFrame.Resolution;
+                lastViewArea = imageFrame.ViewArea;
+
+                NuiWrapper.NuiImageStreamReleaseFrame(context.ImageHandle, pImageFrame);
+            }
         }
 
         if (UpdateDepth) {
@@ -612,42 +644,45 @@ class ZigInputKinectSDK : IZigInputReader
                 
                 // lock & copy the depth data
                 NuiWrapper.NuiLockedRect rect = depthTexture.LockRect();
-                Marshal.Copy(rect.ActualDataFinally, Depth.data, 0, Depth.data.Length);
+                Marshal.Copy(rect.ActualDataFinally, registrationBuffer, 0, registrationBuffer.Length);
                 depthTexture.UnlockRect();
-                if (UpdateLabelMap) {
-                    for (int i = 0; i < Depth.data.Length; i++) {
-                        short d = Depth.data[i];
-                        LabelMap.data[i] = (short)(d & PLAYER_MASK);
-                        Depth.data[i] = (short)(d >> 3);
+
+                // Depth->RGB registration
+                if (AlignDepthToRGB) {
+                    int colorX;
+                    int colorY;
+                    Array.Clear(Depth.data, 0, Depth.xres * Depth.yres);
+                    for (int depthY = 0, i = 0; depthY < Depth.yres; depthY++) {
+                        for (int depthX = 0; depthX < Depth.xres; depthX++, i++) {
+                            ushort d = (ushort)(registrationBuffer[i] & ~PLAYER_MASK);
+                            NuiWrapper.NuiImageGetColorPixelCoordinatesFromDepthPixel(NuiWrapper.NuiImageResolution.Res320x240, ref lastViewArea, depthX, depthY, d, out colorX, out colorY);
+                            if (colorX >= 0 && colorY >= 0 && colorX < Depth.xres && colorY < Depth.yres) {
+                                Depth.data[colorY * Depth.xres + colorX] = (short)(d >> 3);
+                                if (UpdateLabelMap) {
+                                    LabelMap.data[colorY * Depth.xres + colorX] = (short)(registrationBuffer[i] & PLAYER_MASK);
+                                }
+                            }
+                        }
                     }
                 }
                 else {
-                    for (int i = 0; i < Depth.data.Length; i++) {
-                        short d = Depth.data[i];
-                        Depth.data[i] = (short)(d >> 3);
+                    if (UpdateLabelMap) {
+                        for (int i = 0; i < registrationBuffer.Length; i++) {
+                            short d = registrationBuffer[i];
+                            LabelMap.data[i] = (short)(d & PLAYER_MASK);
+                            Depth.data[i] = (short)(d >> 3);
+                        }
+                    }
+                    else {
+                        for (int i = 0; i < registrationBuffer.Length; i++) {
+                            short d = registrationBuffer[i];
+                            Depth.data[i] = (short)(d >> 3);
+                        }
                     }
                 }
+
                 // release current frame
                 NuiWrapper.NuiImageStreamReleaseFrame(context.DepthHandle, pDepthFrame);
-            }
-        }
-
-        if (UpdateImage) {
-            IntPtr pImageFrame;
-            if (0 == NuiWrapper.NuiImageStreamGetNextFrame(context.ImageHandle, 0, out pImageFrame)) {
-                imageFrame = (NuiWrapper.NuiImageFrame)Marshal.PtrToStructure(pImageFrame, typeof(NuiWrapper.NuiImageFrame));
-                NuiWrapper.INuiFrameTexture imageTexture = new NuiWrapper.INuiFrameTexture(imageFrame.FrameTexture);
-                
-                NuiWrapper.NuiLockedRect rect = imageTexture.LockRect();
-                NuiWrapper.ColorBuffer colors = (NuiWrapper.ColorBuffer)Marshal.PtrToStructure(rect.ActualDataFinally, typeof(NuiWrapper.ColorBuffer));
-                for (int i = 0; i < Image.data.Length; i++) {
-                    Image.data[i].r = colors.data[i].r;
-                    Image.data[i].g = colors.data[i].g;
-                    Image.data[i].b = colors.data[i].b;
-                    Image.data[i].a = 255;
-                }
-                imageTexture.UnlockRect();
-                NuiWrapper.NuiImageStreamReleaseFrame(context.ImageHandle, pImageFrame);
             }
         }
 	}

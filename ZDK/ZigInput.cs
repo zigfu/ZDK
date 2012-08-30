@@ -143,7 +143,7 @@ interface IZigInputReader
     // misc
     Vector3 ConvertWorldToImageSpace(Vector3 worldPosition);
     Vector3 ConvertImageToWorldSpace(Vector3 imagePosition);
-    //bool AlignDepthToRGB { get; set; }
+    bool AlignDepthToRGB { get; set; }
 }
 
 public class ZigTrackedUser
@@ -216,6 +216,7 @@ public class ZigInputSettings
     public bool UpdateDepth = true;
     public bool UpdateImage = false;
     public bool UpdateLabelMap = false;
+    public bool AlignDepthToRGB = false;
     public ZigSettingsOpenNI OpenNISpecific;
     public ZigSettingsKinectSDK KinectSDKSpecific;
 }
@@ -223,7 +224,6 @@ public class ZigInputSettings
 [Serializable]
 public class ZigSettingsOpenNI
 {
-    public bool AlignDepthToRGB = false;
     public bool Mirror = true;
     public bool UseXML = false;
     public string XMLPath = "SampleConfig.xml";

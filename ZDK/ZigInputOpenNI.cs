@@ -18,7 +18,7 @@ class ZigInputOpenNI : IZigInputReader
         UpdateDepth = settings.UpdateDepth;
         UpdateImage = settings.UpdateImage;
         UpdateLabelMap = settings.UpdateLabelMap;
-        AlignDepthToRGB = settings.OpenNISpecific.AlignDepthToRGB;
+        AlignDepthToRGB = settings.AlignDepthToRGB;
         Mirror = settings.OpenNISpecific.Mirror;
         LoadFromXML = settings.OpenNISpecific.UseXML;
         XMLFilename = settings.OpenNISpecific.XMLPath;
