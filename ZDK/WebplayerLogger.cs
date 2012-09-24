@@ -39,12 +39,17 @@ public class WebplayerLogger : MonoBehaviour {
 			logEntries.RemoveRange(0, logEntries.Count - maxItems);
 		}
 	}
-	
+
+    public bool showLogger = false;
 	void OnGUI()
 	{
-		GUILayout.Box("Log:");
-		foreach (string s in logEntries) {	
-			GUILayout.Label(s);
-		}
+        if (showLogger)
+        {
+            GUILayout.Box("Log:");
+            foreach (string s in logEntries)
+            {
+                GUILayout.Label(s);
+            }
+        }
 	}
 }

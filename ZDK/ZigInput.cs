@@ -219,6 +219,7 @@ public class ZigInputSettings
     public bool AlignDepthToRGB = false;
     public ZigSettingsOpenNI OpenNISpecific;
     public ZigSettingsKinectSDK KinectSDKSpecific;
+    public bool showWebPlayerLogger = false;
 }
 
 [Serializable]
@@ -342,6 +343,17 @@ public class ZigInput : MonoBehaviour {
     IZigInputReader reader;
 	public bool ReaderInited { get; private set; }
     public bool kinectSDK = false;
+
+
+    public OpenNI.HandsGenerator GetHands()
+    {
+        return ((ZigInputOpenNI)reader).Hands;
+    }
+    public OpenNI.GestureGenerator GetGestures()
+    {
+        return ((ZigInputOpenNI)reader).Gestures;
+    }
+
 	public void SetNearMode(bool NearMode)
     {
         if (!kinectSDK)
@@ -365,6 +377,7 @@ public class ZigInput : MonoBehaviour {
 		
 		// reader factory
 		if (Application.isWebPlayer) {
+            WebplayerLogger.Instance.showLogger = Settings.showWebPlayerLogger;
 			reader = (new ZigInputWebplayer()) as IZigInputReader;
             ReaderInited = StartReader();
 		} else {
