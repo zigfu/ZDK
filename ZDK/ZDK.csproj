@@ -59,6 +59,7 @@
     <Compile Include="WebplayerReceiver.cs" />
     <Compile Include="ZigInputKinectSDK.cs" />
     <Compile Include="ZigInputOpenNI.cs" />
+    <Compile Include="ZigInputOpenNI2.cs" />
     <Compile Include="ZigInputWebplayer.cs" />
     <Compile Include="JSON.cs" />
     <Compile Include="WebplayerLogger.cs" />

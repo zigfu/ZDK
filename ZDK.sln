@@ -5,12 +5,22 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZDK", "ZDK\ZDK.csproj", "{2
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Mixed Platforms = Debug|Mixed Platforms
+		Debug|Win32 = Debug|Win32
 		Debug|x86 = Debug|x86
+		Release|Mixed Platforms = Release|Mixed Platforms
+		Release|Win32 = Release|Win32
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2D2602E3-6E58-4611-9DA5-C39B54D2E6AE}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{2D2602E3-6E58-4611-9DA5-C39B54D2E6AE}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{2D2602E3-6E58-4611-9DA5-C39B54D2E6AE}.Debug|Win32.ActiveCfg = Debug|x86
 		{2D2602E3-6E58-4611-9DA5-C39B54D2E6AE}.Debug|x86.ActiveCfg = Debug|x86
 		{2D2602E3-6E58-4611-9DA5-C39B54D2E6AE}.Debug|x86.Build.0 = Debug|x86
+		{2D2602E3-6E58-4611-9DA5-C39B54D2E6AE}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{2D2602E3-6E58-4611-9DA5-C39B54D2E6AE}.Release|Mixed Platforms.Build.0 = Release|x86
+		{2D2602E3-6E58-4611-9DA5-C39B54D2E6AE}.Release|Win32.ActiveCfg = Release|x86
 		{2D2602E3-6E58-4611-9DA5-C39B54D2E6AE}.Release|x86.ActiveCfg = Release|x86
 		{2D2602E3-6E58-4611-9DA5-C39B54D2E6AE}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection

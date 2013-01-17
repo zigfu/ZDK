@@ -1,4 +1,4 @@
-//#define WATERMARK_OMERCY
+#define WATERMARK_OMERCY
 
 using UnityEngine;
 using System;
@@ -86,8 +86,8 @@ public class NewUsersFrameEventArgs : EventArgs
 }
 
 public class ZigDepth {
-    public int xres { get; private set; }
-    public int yres { get; private set; }
+    public int xres;
+    public int yres;
     public short[] data;
     public ZigDepth(int x, int y) {
         xres = x;
@@ -121,7 +121,7 @@ public class ZigLabelMap
     }
 }
 
-interface IZigInputReader
+public interface IZigInputReader
 {
 	// init/update/shutdown
 	void Init(ZigInputSettings settings);
@@ -206,8 +206,9 @@ public class ZigTrackedUser
 
 public enum ZigInputType {
     Auto,
-	OpenNI,
+	OpenNI,    
 	KinectSDK,
+    OpenNI2,
 }
 
 [Serializable]
@@ -340,10 +341,22 @@ public class ZigInput : MonoBehaviour {
 	//-------------------------------------------------------------------------
 	
 	public List<GameObject> listeners = new List<GameObject>();
-    IZigInputReader reader;
+    public IZigInputReader reader;
 	public bool ReaderInited { get; private set; }
     public bool kinectSDK = false;
 
+    public ZigInputOpenNI getOpenNI()
+    {
+        return reader as ZigInputOpenNI;
+    }
+    public OpenNI2.ZigInputOpenNI2 getOpenNI2()
+    {
+        return reader as OpenNI2.ZigInputOpenNI2;
+    }
+    public ZigInputKinectSDK getKinectSDK()
+    {
+        return reader as ZigInputKinectSDK;
+    }
 
     public OpenNI.HandsGenerator GetHands()
     {
@@ -368,7 +381,12 @@ public class ZigInput : MonoBehaviour {
         ZigInputKinectSDK r = reader as ZigInputKinectSDK;
         r.SetSkeletonTrackingSettings(SeatedMode, TrackSkeletonInNearMode);     
     }
-
+    public void UpdateMaps()
+    {
+        ZigInput.Depth = reader.Depth;
+        ZigInput.Image = reader.Image;
+        ZigInput.LabelMap = reader.LabelMap;
+    }
 
 	void Awake() {
 		#if WATERMARK_OMERCY
@@ -412,8 +430,17 @@ public class ZigInput : MonoBehaviour {
                         }
                         else
                         {
-                            print("failed opening sensor using OpenNI");
-                            Debug.LogError("Failed to load driver and middleware, review warnings above for specific exception messages from middleware");
+                            print("failed opening sensor using OpenNI version 1, attempting to open the sensor with OpenNI 2");
+                            reader = (new OpenNI2.ZigInputOpenNI2()) as IZigInputReader;
+                            if (StartReader())
+                            {
+                                ReaderInited = true;
+                            }
+                            else
+                            {
+                                print("failed opening sensor using OpenNI version 2");
+                                Debug.LogError("Failed to load driver and middleware, review warnings above for specific exception messages from middleware");
+                            }
                         }
                     }
             }
@@ -423,6 +450,11 @@ public class ZigInput : MonoBehaviour {
                 {
                     print("Trying to open sensor using OpenNI");
                     reader = (new ZigInputOpenNI()) as IZigInputReader;
+                }
+                else if (ZigInput.InputType == ZigInputType.OpenNI2)
+                {
+                    print("Trying to open sensor using OpenNI2");
+                    reader = (new OpenNI2.ZigInputOpenNI2()) as IZigInputReader;
                 }
                 else
                 {
