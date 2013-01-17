@@ -438,7 +438,8 @@ public class ZigInput : MonoBehaviour {
                             }
                             else
                             {
-                                print("failed opening sensor using OpenNI version 2");
+                                print("failed opening sensor using OpenNI version 2.");
+                                print("Note that OpenNI2 requires you to move the Redist directories from C:\\Program Files\\PrimeSense\\NiTE2\\Redist and C:\\Program Files\\OpenNI2\\Redist to your Unity project's root directory.");
                                 Debug.LogError("Failed to load driver and middleware, review warnings above for specific exception messages from middleware");
                             }
                         }
@@ -469,7 +470,9 @@ public class ZigInput : MonoBehaviour {
                 }
                 else
                 {
+                    print("Note that OpenNI2 requires you to move the Redist directories from C:\\Program Files\\PrimeSense\\NiTE2\\Redist and C:\\Program Files\\OpenNI2\\Redist to your Unity project's root directory.");
                     Debug.LogError("Failed to load driver and middleware, consider setting the Zig Input Type to Auto");
+                    
                 }
 
             }    
