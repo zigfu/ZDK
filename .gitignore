@@ -1,7 +1,7 @@
 *.userprefs
 *.suo
 *.user
-
+*.opensdf
 ZDK/bin
 ZDK/obj
 
