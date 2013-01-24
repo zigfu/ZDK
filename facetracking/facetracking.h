@@ -2,9 +2,9 @@
 
 #include <FaceTrackLib.h>
 
-extern "C"
-{
-		 IFTFaceTracker * EXPORT_API FT_CreateFaceTracker()
+extern "C" 
+	{
+		IFTFaceTracker * EXPORT_API FT_CreateFaceTracker()
 		 {
 			return FTCreateFaceTracker();
 		 }
@@ -147,12 +147,25 @@ extern "C"
 
 
 
-
+	
 
 ///IFTImage interface
+		 	IFTImage * EXPORT_API FT_CreateImage()
+			{
+				return FTCreateImage(); 
+			}
 
 // // AddRef	Increments the reference count for an interface on an object. This method should be called for every new copy of a pointer to an interface on an object.
+			ULONG EXPORT_API FTI_AddRef(IFTImage * pFTI)
+			{
+				return pFTI->AddRef();
+			}
+
 // // Allocate	Allocates memory for the image of passed width, height and format. The memory is owned by this interface and is released when the interface is released or when another Allocate call happens. Allocate deallocates currently allocated memory if its internal buffers are not big enough to fit new image data. If its internal buffers are big enough, no new allocation occurs.
+			HRESULT EXPORT_API RTI_Allocate(IFTImage * pFTI, UINT width, UINT height, FTIMAGEFORMAT format)
+			{
+				pFTI->Allocate(width, height, format);
+			}
 // // Attach	Attaches this interface to external memory pointed to by pData, which is assumed to be sufficiently large to contain an image of the given size and format. The memory referenced by pData is not deallocated when this interface is released. The caller owns the image buffer in this case and is responsible for its lifetime management.
 // // CopyTo	Non-allocating copy method. It copies this image data to pDestImage. It fails, if pDestImage doesn't have the right size or format. If pDestImage has a different format, then this method attempts to convert pixels to pDestImage image format (if possible and supported).
 // // DrawLine	Draws a line on the image.
@@ -166,8 +179,16 @@ extern "C"
 // // IsAttached	Gets the image buffer ownership state.
 // // QueryInterface	Retrieves pointers to the supported interfaces on an object. This method calls IFTFaceTracker::AddRef on the pointer it returns.
 // // Release	Decrements the reference count for an interface on an object.
-// // Reset	Frees internal memory and sets this image to the empty state (0 size).
+			ULONG EXPORT_API FTI_Release(IFTImage * pFTI)
+			{
+				return pFTI->Release();
+			}
 
+// // Reset	Frees internal memory and sets this image to the empty state (0 size).
+			HRESULT EXPORT_API FTI_Reset(IFTImage * pFTI)
+			{
+				return pFTI->Reset();
+			}
 
 
 }

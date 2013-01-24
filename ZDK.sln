@@ -2,6 +2,9 @@
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZDK", "ZDK\ZDK.csproj", "{2D2602E3-6E58-4611-9DA5-C39B54D2E6AE}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4864F04F-F36C-4EC4-AC7B-42DDEDBD03D5} = {4864F04F-F36C-4EC4-AC7B-42DDEDBD03D5}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "facetracking", "facetracking\facetracking.vcxproj", "{4864F04F-F36C-4EC4-AC7B-42DDEDBD03D5}"
 EndProject
