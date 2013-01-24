@@ -1,4 +1,4 @@
-#define WATERMARK_OMERCY
+//#define WATERMARK_OMERCY
 
 using UnityEngine;
 using System;
