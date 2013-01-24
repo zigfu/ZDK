@@ -69,9 +69,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="facetracking.h" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="ft.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

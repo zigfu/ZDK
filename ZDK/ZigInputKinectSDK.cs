@@ -115,6 +115,28 @@ struct NuiContext
     public IntPtr ImageHandle;
 }
 
+public class FaceTracker
+{
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct FT_CAMERA_CONFIG
+    {   
+        // Note that camera pixels should be square
+        public UInt32 Width;            // frame width in pixels, allowed range - 1-UINT_MAX
+        public UInt32 Height;           // frame height in pixels, allowed range - 1-UINT_MAX
+        public float FocalLength;      // camera’s focal length in pixels, allowed range - 0-FLOAT_MAX, where 0 value means - use an estimated focal length (average for most cameras, the tracking precision may degrade)
+    }
+
+
+
+    [DllImport("FaceTrackLib.dll")]
+    public static extern IntPtr FTCreateFaceTracker();
+
+    [DllImport("facetracking.dll")]
+    public static extern UInt32 FT_Initialize(IntPtr FT, FT_CAMERA_CONFIG pVideoCameraConfig, FT_CAMERA_CONFIG pDepthCameraConfig, IntPtr depthToColorMappingFunc, string pszModelPath);
+}
+
+
 public class NuiWrapper
 {
     public static bool BoneOrientationsSupported()
