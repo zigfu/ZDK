@@ -1,0 +1,12 @@
+﻿Build started 1/23/2013 11:21:39 PM.
+     1>Project "F:\zigfu\ZDK\facetracking\facetracking.vcxproj" on node 2 (build target(s)).
+     1>InitializeBuildStatus:
+         Creating "Release\facetracking.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       FinalizeBuildStatus:
+         Deleting file "Release\facetracking.unsuccessfulbuild".
+         Touching "Release\facetracking.lastbuildstate".
+     1>Done Building Project "F:\zigfu\ZDK\facetracking\facetracking.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:00.81
