@@ -248,6 +248,7 @@ public class ZigSettingsKinectSDK
     public bool SeatedMode = false;
     public bool NearMode = false;
     public bool TrackSkeletonInNearMode = false;
+    public bool EnableFaceTracking = false;
     public KinectSDKSmoothingParameters SmoothingParameters = new KinectSDKSmoothingParameters();    
 }
 
