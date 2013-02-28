@@ -115,27 +115,6 @@ struct NuiContext
     public IntPtr ImageHandle;
 }
 
-public class FaceTracker
-{
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct FT_CAMERA_CONFIG
-    {   
-        // Note that camera pixels should be square
-        public UInt32 Width;            // frame width in pixels, allowed range - 1-UINT_MAX
-        public UInt32 Height;           // frame height in pixels, allowed range - 1-UINT_MAX
-        public float FocalLength;      // camera’s focal length in pixels, allowed range - 0-FLOAT_MAX, where 0 value means - use an estimated focal length (average for most cameras, the tracking precision may degrade)
-    }
-
-
-
-    [DllImport("FaceTrackLib.dll")]
-    public static extern IntPtr FTCreateFaceTracker();
-
-    [DllImport("facetracking.dll")]
-    public static extern UInt32 FT_Initialize(IntPtr FT, FT_CAMERA_CONFIG pVideoCameraConfig, FT_CAMERA_CONFIG pDepthCameraConfig, IntPtr depthToColorMappingFunc, string pszModelPath);
-}
-
 
 public class NuiWrapper
 {
@@ -784,6 +763,7 @@ public class ZigInputKinectSDK : IZigInputReader
 
     public void Init(ZigInputSettings settings)
     {
+        FaceTrackingEnabled = settings.KinectSDKSpecific.EnableFaceTracking;
         UpdateDepth = settings.UpdateDepth;
         UpdateImage = settings.UpdateImage;
         UpdateLabelMap = settings.UpdateLabelMap;
@@ -822,6 +802,12 @@ public class ZigInputKinectSDK : IZigInputReader
             //hr = NuiWrapper.NuiImageStreamOpen(NuiWrapper.NuiImageType.DepthAndPlayerIndex, NuiWrapper.NuiImageResolution.Res320x240, 0, 2, IntPtr.Zero, out context.DepthHandle);
             flags = settings.KinectSDKSpecific.NearMode ? (uint)NuiWrapper.NuiImageFlag.NUI_IMAGE_STREAM_FLAG_ENABLE_NEAR_MODE : 0;
             hr = NuiWrapper.NuiImageStreamOpen(NuiWrapper.NuiImageType.DepthAndPlayerIndex, NuiWrapper.NuiImageResolution.Res320x240, flags, 2, throwawayEvent, out context.DepthHandle);
+            if( hr == 2197880847)
+            {
+                Debug.LogWarning("Near Mode is not support on your hardware, disabling");
+                settings.KinectSDKSpecific.NearMode = false;
+                hr = NuiWrapper.NuiImageStreamOpen(NuiWrapper.NuiImageType.DepthAndPlayerIndex, NuiWrapper.NuiImageResolution.Res320x240, 0, 2, throwawayEvent, out context.DepthHandle);
+            }
             if (0 != hr)
             {
                 NuiWrapper.NuiShutdown(); // just in case
@@ -862,6 +848,11 @@ public class ZigInputKinectSDK : IZigInputReader
         LabelMap = new ZigLabelMap(320, 240);
 
         registrationBuffer = new short[320 * 240];
+        if(FaceTrackingEnabled)
+        {
+            ZigFaceTracker.FT_CreateFaceTracker();
+            ZigFaceTracker.FT_InitFaceTracker();            
+        }
     }
 
     NuiWrapper.NuiImageResolution lastResolution;
@@ -879,6 +870,8 @@ public class ZigInputKinectSDK : IZigInputReader
             IntPtr pImageFrame;
             if (0 == NuiWrapper.NuiImageStreamGetNextFrame(context.ImageHandle, 0, out pImageFrame))
             {
+                if(FaceTrackingEnabled)
+                    ZigFaceTracker.FT_ProcessVideoFrame(pImageFrame);
                 imageFrame = (NuiWrapper.NuiImageFrame)Marshal.PtrToStructure(pImageFrame, typeof(NuiWrapper.NuiImageFrame));
                 NuiWrapper.INuiFrameTexture imageTexture = new NuiWrapper.INuiFrameTexture(imageFrame.FrameTexture);
 
@@ -905,7 +898,8 @@ public class ZigInputKinectSDK : IZigInputReader
             IntPtr pDepthFrame;
             if (0 == NuiWrapper.NuiImageStreamGetNextFrame(context.DepthHandle, 0, out pDepthFrame))
             {
-
+                if(FaceTrackingEnabled)
+                    ZigFaceTracker.FT_ProcessDepthFrame(pDepthFrame);
                 // deal with deref'ing/marshalling
                 depthFrame = (NuiWrapper.NuiImageFrame)Marshal.PtrToStructure(pDepthFrame, typeof(NuiWrapper.NuiImageFrame));
                 NuiWrapper.INuiFrameTexture depthTexture = new NuiWrapper.INuiFrameTexture(depthFrame.FrameTexture);
@@ -962,11 +956,32 @@ public class ZigInputKinectSDK : IZigInputReader
                 // release current frame
                 NuiWrapper.NuiImageStreamReleaseFrame(context.DepthHandle, pDepthFrame);
             }
+            if(FaceTrackingEnabled)
+            {
+                ZigFaceTrackingEvents resaults = (ZigFaceTrackingEvents)ZigFaceTracker.FT_TrackFrame();
+               switch(resaults)
+               {
+                   case ZigFaceTrackingEvents.FaceDetected:
+                        Debug.Log("Zig: Face Dected");
+                   break;
+                   case ZigFaceTrackingEvents.FaceLost:
+                        Debug.Log("Zig: Face Lost");
+                   break;
+                   case ZigFaceTrackingEvents.ContinueTracking:
+                   break;
+                   default:
+                     Debug.Log("Face Tracking Error: " + resaults);
+                   break;  
+               }
+               ZigFaceTracker.UpdateFaceTransform();
+            }
         }
     }
 
     public void Shutdown()
     {
+        if(FaceTrackingEnabled)
+            ZigFaceTracker.FT_ShutDown();
         NuiWrapper.NuiShutdown();
     }
 
@@ -988,6 +1003,8 @@ public class ZigInputKinectSDK : IZigInputReader
     public bool UpdateLabelMap { get; set; }
 
     public bool AlignDepthToRGB { get; set; } //TODO: support
+
+    public bool FaceTrackingEnabled { get; set; } 
 
     public Vector3 ConvertWorldToImageSpace(Vector3 worldPosition)
     {
