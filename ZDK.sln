@@ -1,7 +1,9 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZDK", "ZDK\ZDK.csproj", "{2D2602E3-6E58-4611-9DA5-C39B54D2E6AE}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ZigNativeKinectAudioSourceDll", "ZigNativeKinectAudioSourceDll\ZigNativeKinectAudioSourceDll.vcxproj", "{86D073BE-9892-4CF9-9FBB-9466A9622906}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,6 +25,18 @@ Global
 		{2D2602E3-6E58-4611-9DA5-C39B54D2E6AE}.Release|Win32.ActiveCfg = Release|x86
 		{2D2602E3-6E58-4611-9DA5-C39B54D2E6AE}.Release|x86.ActiveCfg = Release|x86
 		{2D2602E3-6E58-4611-9DA5-C39B54D2E6AE}.Release|x86.Build.0 = Release|x86
+		{86D073BE-9892-4CF9-9FBB-9466A9622906}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{86D073BE-9892-4CF9-9FBB-9466A9622906}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{86D073BE-9892-4CF9-9FBB-9466A9622906}.Debug|Win32.ActiveCfg = Debug|Win32
+		{86D073BE-9892-4CF9-9FBB-9466A9622906}.Debug|Win32.Build.0 = Debug|Win32
+		{86D073BE-9892-4CF9-9FBB-9466A9622906}.Debug|x86.ActiveCfg = Debug|Win32
+		{86D073BE-9892-4CF9-9FBB-9466A9622906}.Debug|x86.Build.0 = Debug|Win32
+		{86D073BE-9892-4CF9-9FBB-9466A9622906}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{86D073BE-9892-4CF9-9FBB-9466A9622906}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{86D073BE-9892-4CF9-9FBB-9466A9622906}.Release|Win32.ActiveCfg = Release|Win32
+		{86D073BE-9892-4CF9-9FBB-9466A9622906}.Release|Win32.Build.0 = Release|Win32
+		{86D073BE-9892-4CF9-9FBB-9466A9622906}.Release|x86.ActiveCfg = Release|Win32
+		{86D073BE-9892-4CF9-9FBB-9466A9622906}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -55,20 +55,25 @@
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
+    <Compile Include="Utility\MathHelper.cs" />
     <Compile Include="ZigInput.cs" />
     <Compile Include="WebplayerReceiver.cs" />
     <Compile Include="ZigInputKinectSDK.cs" />
     <Compile Include="ZigInputOpenNI.cs" />
     <Compile Include="ZigInputOpenNI2.cs" />
     <Compile Include="ZigInputWebplayer.cs" />
-    <Compile Include="JSON.cs" />
+    <Compile Include="Utility\JSON.cs" />
     <Compile Include="WebplayerLogger.cs" />
+    <Compile Include="ZigKinectAudioSource\ZigKinectAudioSource.cs" />
+    <Compile Include="ZigKinectAudioSource\ZigKinectAudioSource_ImportedFunctions.cs" />
+    <Compile Include="ZigKinectAudioSource\ZigKinectAudioSource_CaptureAudio.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="OpenNI.Net, Version=1.5.2.23, Culture=neutral, PublicKeyToken=6b43d0c6cf74ee7f, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\ZDKNative\OpenNI.Net.dll</HintPath>
     </Reference>
+    <Reference Include="System" />
     <Reference Include="UnityEngine">
       <HintPath>C:\Program Files (x86)\Unity\Editor\Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
@@ -93,4 +98,7 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <PropertyGroup>
+    <PostBuildEvent>xcopy "$(TargetPath)" "$(SolutionDir)\KinectAudioUnityDemos\Assets\ZigFu\Scripts\_Internal\" /s /i /y</PostBuildEvent>
+  </PropertyGroup>
 </Project>

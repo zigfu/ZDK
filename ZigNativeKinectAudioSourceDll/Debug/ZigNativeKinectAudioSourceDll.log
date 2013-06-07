@@ -1,0 +1,19 @@
+﻿Build started 6/7/2013 10:51:25 AM.
+     1>Project "C:\Users\Randy\Documents\GitHub\ZDK\ZigNativeKinectAudioSourceDll\ZigNativeKinectAudioSourceDll.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /I"C:\Program Files\Microsoft SDKs\Kinect\v1.7\inc" /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _WINDOWS /D _USRDLL /D ZIGNATIVEAUDIOBEAMDLL_EXPORTS /D _WINDLL /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yc"stdafx.h" /Fp"Debug\ZigNativeKinectAudioSourceDll.pch" /Fo"Debug\\" /Fd"Debug\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt ZigNativeKinectAudioSourceDll.cpp
+         ZigNativeKinectAudioSourceDll.cpp
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Randy\Documents\GitHub\ZDK\Debug\ZigNativeKinectAudioSourceDll.dll" /INCREMENTAL /NOLOGO /LIBPATH:"C:\Program Files\Microsoft SDKs\Kinect\v1.7\lib\x86" Msdmo.lib dmoguids.lib amstrmid.lib Kinect10.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\Randy\Documents\GitHub\ZDK\Debug\ZigNativeKinectAudioSourceDll.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Randy\Documents\GitHub\ZDK\Debug\ZigNativeKinectAudioSourceDll.lib" /MACHINE:X86 /DLL Debug\ZigNativeKinectAudioSourceDll.obj
+            Creating library C:\Users\Randy\Documents\GitHub\ZDK\Debug\ZigNativeKinectAudioSourceDll.lib and object C:\Users\Randy\Documents\GitHub\ZDK\Debug\ZigNativeKinectAudioSourceDll.exp
+         ZigNativeKinectAudioSourceDll.vcxproj -> C:\Users\Randy\Documents\GitHub\ZDK\Debug\ZigNativeKinectAudioSourceDll.dll
+       PostBuildEvent:
+         xcopy "C:\Users\Randy\Documents\GitHub\ZDK\Debug\ZigNativeKinectAudioSourceDll.dll" "C:\Users\Randy\Documents\GitHub\ZDK\\KinectAudioUnityDemos\Assets\ZigFu\Scripts\_Internal\" /s /i /y
+         :VCEnd
+         C:\Users\Randy\Documents\GitHub\ZDK\Debug\ZigNativeKinectAudioSourceDll.dll
+         1 File(s) copied
+     1>Done Building Project "C:\Users\Randy\Documents\GitHub\ZDK\ZigNativeKinectAudioSourceDll\ZigNativeKinectAudioSourceDll.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:03.54

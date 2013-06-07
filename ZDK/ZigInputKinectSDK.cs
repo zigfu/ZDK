@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
+
 /*
 //-----------------------------------------------------------------------------
 
@@ -778,6 +779,7 @@ public class ZigInputKinectSDK : IZigInputReader
         context = new NuiContext();
 
         UInt32 flags =
+            (uint)NuiWrapper.NuiInitializeFlag.UsesAudio |
             (uint)NuiWrapper.NuiInitializeFlag.UsesDepthAndPlayerIndex |
             (uint)NuiWrapper.NuiInitializeFlag.UsesSkeleton |
             (uint)NuiWrapper.NuiInitializeFlag.UsesColor;
