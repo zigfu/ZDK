@@ -5,6 +5,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.ComponentModel;
 using System.Text;
+using ZDK.Utility;
 
 
 // Summary:
@@ -12,17 +13,17 @@ using System.Text;
 //      ZigKinectAudioSource extends MonoBehaviour, using a Coroutine (CaptureAudio_Coroutine())
 //      to update it's Kinect audio stream internally every CaptureAudioInterval_MS milliseconds.
 //
-//      Microsoft.Kinect.KinectAudioSource contains the methods Start() and Stop();
+//      Whereas Microsoft.Kinect.KinectAudioSource contains the methods Start() and Stop(),
 //      ZigKinectAudioSource contains the equivalent methods StartCapturingAudio() and StopCapturingAudio().
 //      
 // Note:
 //      Partial class definition also exists in ZigKinectAudioSource_ImportedFunctions.cs.
-//      It contains Declarations of external functions imported from ZigNativeKinectAudioSourceDll.dll.
+//      - It contains Declarations of external functions imported from ZigNativeKinectAudioSourceDll.dll.
 //
 //      Partial class definition also exists in ZigKinectAudioSource_CaptureAudio.cs.
-//      It contains functionality for capturing Kinect Audio Data and writing it to a Stream
+//      - It contains functionality for capturing Kinect Audio Data and writing it to a Stream
 // 
-public sealed partial class ZigKinectAudioSource : MonoBehaviour
+public sealed partial class ZigKinectAudioSource : Singleton<ZigKinectAudioSource>
 {
     const String ClassName = "ZigKinectAudioSource";
 
@@ -67,45 +68,23 @@ public sealed partial class ZigKinectAudioSource : MonoBehaviour
         CancellationAndSuppression,     // Apply both echo cancellation and acoustic echo suppression.
         CancellationOnly,               // Apply only echo cancellation.
         None                            // Apply neither. (This is the default option.)
-    } 
+    }
     const ZigEchoCancellationMode DefaultZigEchoCancellationMode = ZigEchoCancellationMode.None;
     public ZigEchoCancellationMode _echoCancellationMode = DefaultZigEchoCancellationMode;
-
-
-    #region Singleton Logic
-
-    static ZigKinectAudioSource _instance;
-
-    // Summary:
-    //      Ensures only one instance of the class exists at a time
-    public static ZigKinectAudioSource Instance
-    {
-        get
-        {
-            if (null == _instance)
-            {
-                _instance = FindObjectOfType(typeof(ZigKinectAudioSource)) as ZigKinectAudioSource;
-                if (null == _instance)
-                {
-                    GameObject container = new GameObject();
-                    DontDestroyOnLoad(container);
-                    container.name = "ZigKinectAudioSourceContainer";
-                    _instance = container.AddComponent<ZigKinectAudioSource>();
-                }
-                DontDestroyOnLoad(_instance);
-            }
-            return _instance;
-        }
-    }
-
-    #endregion
 
 
     #region Init and Destroy
 
     void Start()
     {
-        Initialize();
+        try
+        {
+            Initialize();
+        }
+        catch
+        {
+            return;
+        }
     }
 
     // Summary:
@@ -113,12 +92,12 @@ public sealed partial class ZigKinectAudioSource : MonoBehaviour
     //     Must be called before any of this classes properties can be set
     void Initialize()
     {
-        if (verbose) { print(ClassName + " :: Initialize"); }
-
         if (_hasBeenInitialized)
         {
             return;
         }
+
+        if (verbose) { print(ClassName + " :: Initialize"); }
 
         Int32 hr = AS_InitializeAudioSource(false);
         if (!EvaluateHResult(hr))
@@ -211,15 +190,17 @@ public sealed partial class ZigKinectAudioSource : MonoBehaviour
     // Summary:
     //      Beam/SoundSource angle bounds, in degrees
     public static Double MinBeamAngle { get { return -50; } }
-    public static Double MaxBeamAngle { get { return  50; } }
+    public static Double MaxBeamAngle { get { return 50; } }
     public static Double MinSoundSourceAngle { get { return -50; } }
-    public static Double MaxSoundSourceAngle { get { return  50; } }
+    public static Double MaxSoundSourceAngle { get { return 50; } }
 
     // Summary:
     //      Gets the sound source angle (in degrees) that the audio array is currently focusing on
-    public Double BeamAngle {
+    public Double BeamAngle
+    {
         get { return _beamAngleInDegrees; }
-        private set {
+        private set
+        {
             int oldAngle_deg = Mathf.RoundToInt((float)_beamAngleInDegrees);
             int newAngle_deg = (int)ConvertAngleToAcceptableBeamAngle_InDegrees(value);
 
@@ -238,7 +219,7 @@ public sealed partial class ZigKinectAudioSource : MonoBehaviour
 
                 OnBeamAngleChanged();
             }
-        }   
+        }
     }
     // Summary:
     //     Gets or sets manual Beam angle, in degrees.
@@ -262,20 +243,23 @@ public sealed partial class ZigKinectAudioSource : MonoBehaviour
     // Summary:
     //     Gets or sets the beam angle mode that determines how the beam angle is controlled.
     //      Default is Automatic.
-    public ZigBeamAngleMode BeamAngleMode {
-        get {
+    public ZigBeamAngleMode BeamAngleMode
+    {
+        get
+        {
             Boolean isEnabled;
             Int32 hr = AS_GetManualBeamModeEnabled(out isEnabled);
             EvaluateHResult(hr);
-            return isEnabled ? ZigBeamAngleMode.Manual : ZigBeamAngleMode.Automatic; 
+            return isEnabled ? ZigBeamAngleMode.Manual : ZigBeamAngleMode.Automatic;
         }
-        set {
+        set
+        {
             if (verbose) { Debug.Log("Set BeamAngleMode to " + value); }
             Int32 hr = AS_SetManualBeamModeEnabled(value == ZigBeamAngleMode.Manual);
             EvaluateHResult(hr);
         }
-    }  
- 
+    }
+
     // Summary:
     //     Gets the most recent sound source position observed, in degrees.
     //
@@ -284,7 +268,8 @@ public sealed partial class ZigKinectAudioSource : MonoBehaviour
     public Double SoundSourceAngle
     {
         get { return _soundSourceAngleInDegrees; }
-        private set {
+        private set
+        {
             int oldAngle_deg = Mathf.RoundToInt((float)_soundSourceAngleInDegrees);
             _soundSourceAngleInDegrees = Mathf.RoundToInt((float)value);
 
@@ -293,7 +278,7 @@ public sealed partial class ZigKinectAudioSource : MonoBehaviour
                 if (verbose) { Debug.Log("Set SoundSourceAngle to " + _soundSourceAngleInDegrees); }
 
                 OnSoundSourceAngleChanged();
-            } 
+            }
         }
     }
     // Summary:
@@ -313,13 +298,15 @@ public sealed partial class ZigKinectAudioSource : MonoBehaviour
     //     MFPKEY_WMAAECMA_FEATR_AGC.
     public Boolean AutomaticGainControlEnabled
     {
-        get {
+        get
+        {
             Boolean isEnabled;
             Int32 hr = AS_GetAutomaticGainControlEnabled(out isEnabled);
             EvaluateHResult(hr);
-            return isEnabled; 
+            return isEnabled;
         }
-        set {
+        set
+        {
             if (verbose) { Debug.Log("Set AutomaticGainControlEnabled to " + value); }
             Int32 hr = AS_SetAutomaticGainControlEnabled(value);
             EvaluateHResult(hr);
@@ -330,13 +317,15 @@ public sealed partial class ZigKinectAudioSource : MonoBehaviour
     //     by default.  Maps to the DMO property MFPKEY_WMAAECMA_FEATR_NS.
     public Boolean NoiseSuppression
     {
-        get {
+        get
+        {
             Boolean isEnabled;
             Int32 hr = AS_GetNoiseSuppressionEnabled(out isEnabled);
             EvaluateHResult(hr);
-            return isEnabled; 
+            return isEnabled;
         }
-        set {
+        set
+        {
             if (verbose) { Debug.Log("Set NoiseSuppression to " + value); }
             Int32 hr = AS_SetNoiseSuppressionEnabled(value);
             EvaluateHResult(hr);
@@ -345,11 +334,14 @@ public sealed partial class ZigKinectAudioSource : MonoBehaviour
     // Summary:
     //     Gets or sets the echo cancellation and suppression mode.  Default is None
     //     (i.e.: echo cancellation and echo suppression are both turned off).
-    public ZigEchoCancellationMode EchoCancellationMode {
-        get {
+    public ZigEchoCancellationMode EchoCancellationMode
+    {
+        get
+        {
             return _echoCancellationMode;
         }
-        set {
+        set
+        {
             if (verbose) { Debug.Log("Set EchoCancellationMode to " + value); }
 
             Int32 hr = 0;
@@ -384,14 +376,14 @@ public sealed partial class ZigKinectAudioSource : MonoBehaviour
             }
 
             _echoCancellationMode = value;
-        } 
+        }
     }
     // Summary:
     //		Returns a struct that describes the Kinects audio format
     public WAVEFORMAT GetKinectWaveFormat()
-	{
+    {
         return AS_GetKinectWaveFormat();
-	}
+    }
 
     #endregion
 

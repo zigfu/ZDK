@@ -56,6 +56,7 @@
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <Compile Include="Utility\MathHelper.cs" />
+    <Compile Include="Utility\Singleton.cs" />
     <Compile Include="ZigInput.cs" />
     <Compile Include="WebplayerReceiver.cs" />
     <Compile Include="ZigInputKinectSDK.cs" />
@@ -64,6 +65,7 @@
     <Compile Include="ZigInputWebplayer.cs" />
     <Compile Include="Utility\JSON.cs" />
     <Compile Include="WebplayerLogger.cs" />
+    <Compile Include="ZigKinectAudioSource\AudioStream.cs" />
     <Compile Include="ZigKinectAudioSource\ZigKinectAudioSource.cs" />
     <Compile Include="ZigKinectAudioSource\ZigKinectAudioSource_ImportedFunctions.cs" />
     <Compile Include="ZigKinectAudioSource\ZigKinectAudioSource_CaptureAudio.cs" />

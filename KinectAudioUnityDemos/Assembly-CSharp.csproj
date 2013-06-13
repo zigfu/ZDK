@@ -59,8 +59,9 @@
      <Compile Include="Assets\ZigFu\Scripts\UserEngagers\ZigEngageSingleUser.cs" />
      <Compile Include="Assets\ZigFu\Scripts\UserEngagers\ZigEngageSplitScreen.cs" />
      <Compile Include="Assets\ZigFu\Scripts\Viewers\Audio\AudioToEnergy.cs" />
-     <Compile Include="Assets\ZigFu\Scripts\Viewers\Audio\ZigBeamAngleViewer.cs" />
      <Compile Include="Assets\ZigFu\Scripts\Viewers\Audio\ZigKinectAudioViewer.cs" />
+     <Compile Include="Assets\ZigFu\Scripts\Viewers\Audio\ZigKinectBeamAngleViewer.cs" />
+     <Compile Include="Assets\ZigFu\Scripts\Viewers\Audio\ZigKinectFullAudioViewer.cs" />
      <Compile Include="Assets\ZigFu\Scripts\Viewers\ZigDepthViewer.cs" />
      <Compile Include="Assets\ZigFu\Scripts\Viewers\ZigDepthmapToParticles.cs" />
      <Compile Include="Assets\ZigFu\Scripts\Viewers\ZigImageViewer.cs" />

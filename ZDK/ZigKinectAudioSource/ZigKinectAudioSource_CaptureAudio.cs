@@ -5,6 +5,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.IO;
+using ZDK.ZigKinectAudioSource;
+using ZDK.Utility;
+
 
 // Summary:
 //      Contains functionality for capturing Kinect Audio Data and writing it to a Stream at a regular interval.
@@ -13,17 +16,22 @@ using System.IO;
 //      Main class definition exists in ZigKinectAudioSource.cs.
 //      Partial class definition also exists in ZigKinectAudioSource_ImportedFunctions.cs.
 //
-public sealed partial class ZigKinectAudioSource : MonoBehaviour
+public sealed partial class ZigKinectAudioSource : Singleton<ZigKinectAudioSource>
 {
     public const UInt32 DefaultReadStaleThreshold_Milliseconds = 2000;
-    public const Int32 CaptureAudioInterval_MS = 16;
+    const UInt32 CaptureAudioInterval_MS = 30;
+
+
+    public UInt32 ReadStaleThreshold_Milliseconds {
+        get {
+            return (_audioStream == null) ? DefaultReadStaleThreshold_Milliseconds : (UInt32)_audioStream.ReadStaleThreshold.TotalMilliseconds;
+        }
+    }
+    public bool AudioCapturingHasStarted { get; private set; }
 
 
     Byte[] _audioBuffer;
-    MemoryStream _audioStream;
-
-    bool _audioCapturingHasStarted = false;
-    public bool AudioCapturingHasStarted { get { return _audioCapturingHasStarted; } }
+    AudioStream _audioStream;
 
 
     #region Custom Events
@@ -71,17 +79,17 @@ public sealed partial class ZigKinectAudioSource : MonoBehaviour
 
     #endregion
 
-
     #region Capture Audio
 
     // Summary:
     //      Opens an audio data stream (16-bit PCM format, sampled at 16 kHz)
-    //      and starts capturing audio data streamed out of a sensor. 
-    //      readStaleThreshold is the maximum length of time before data is discarded.
+    //       and starts capturing audio data streamed out of a sensor. 
+    //      readStaleThreshold is the maximum length of time allowed to go by
+    //       without a Read of the audiostream before data is discarded.
     //
     public Stream StartCapturingAudio()
     {
-        return StartCapturingAudio(DefaultReadStaleThreshold_Milliseconds);
+        return StartCapturingAudio(ReadStaleThreshold_Milliseconds);
     }
     public Stream StartCapturingAudio(UInt32 readStaleThreshold_Milliseconds)
     {
@@ -90,24 +98,23 @@ public sealed partial class ZigKinectAudioSource : MonoBehaviour
     }
     public Stream StartCapturingAudio(TimeSpan readStaleThreshold)
     {
-        if (verbose) { print(ClassName + " :: StartCapturingAudio : readStaleThreshold = " + readStaleThreshold.TotalMilliseconds); }
-
-        uint audioStreamCapacity = GetAudioStreamCapacityForReadStaleThreshold(readStaleThreshold);
-        if (_audioCapturingHasStarted)
+        if (AudioCapturingHasStarted)
         {
             return _audioStream;
         }
+
+        if (verbose) { print(ClassName + " :: StartCapturingAudio : readStaleThreshold = " + readStaleThreshold.TotalMilliseconds); }
 
         if (!_hasBeenInitialized)
         {
             Initialize();
         }
 
-        _audioStream = new MemoryStream((int)audioStreamCapacity);
+        _audioStream = new AudioStream(readStaleThreshold);
 
         StartCoroutine(CaptureAudio_Coroutine());
 
-        _audioCapturingHasStarted = true;
+        AudioCapturingHasStarted = true;
         OnAudioCapturingStarted();
 
         return _audioStream;
@@ -118,14 +125,14 @@ public sealed partial class ZigKinectAudioSource : MonoBehaviour
     //
     public void StopCapturingAudio()
     {
-        if (!_audioCapturingHasStarted)
+        if (!AudioCapturingHasStarted)
         {
             return;
         }
 
         if (verbose) { print(ClassName + " :: StopCapturingAudio"); }
 
-        _audioCapturingHasStarted = false;
+        AudioCapturingHasStarted = false;
 
         StopCoroutine("CaptureAudio_Coroutine");
         _audioStream.Close();
@@ -142,7 +149,7 @@ public sealed partial class ZigKinectAudioSource : MonoBehaviour
             Stopwatch stopWatch = new Stopwatch();
             stopWatch.Start();
             {
-                if (_audioCapturingHasStarted)
+                if (AudioCapturingHasStarted)
                 {
                     CaptureAudio_Tick();
                 }
@@ -167,31 +174,11 @@ public sealed partial class ZigKinectAudioSource : MonoBehaviour
             return;
         }
 
-        WriteToAudioStream(readCount);
-        
-        RefreshAudioBeamInfo();
-    }
-
-    void WriteToAudioStream(uint writeCount)
-    {
-        MemoryStream s = _audioStream;
-
-        long pos = s.Position;
-        if (s.Length + writeCount >= s.Capacity)
+        if (readCount > 0)
         {
-            // Transfer remaining unread bytes to start of stream
-            long newLength = s.Length - pos;
-            Byte[] tempBuffer = new Byte[newLength];
-            s.Read(tempBuffer, 0, tempBuffer.Length);
-            pos = s.Position = 0;
-            s.Write(tempBuffer, 0, tempBuffer.Length);
-            s.SetLength(newLength);
+            _audioStream.AppendBytes(_audioBuffer, 0, readCount);
+            RefreshAudioBeamInfo();
         }
-
-        // Write new bytes to end, then return to stored position
-        s.Position = s.Length;
-        s.Write(_audioBuffer, 0, (int)writeCount);
-        s.Position = pos;
     }
 
     void RefreshAudioBeamInfo()
@@ -207,12 +194,12 @@ public sealed partial class ZigKinectAudioSource : MonoBehaviour
 
     #region Helper
 
-    uint GetAudioStreamCapacityForReadStaleThreshold(TimeSpan readStaleThreshold)
+    UInt32 GetAudioStreamByteCountForTimeSpan_MS(UInt32 timeSpan_ms)
     {
         WAVEFORMAT wf = GetKinectWaveFormat();
         float audioBytesPerMillisecond = wf.AudioSamplesPerSecond * wf.AudioBlockAlign * 0.001f;
-        uint audioStreamCapacity = (uint)(readStaleThreshold.TotalMilliseconds * audioBytesPerMillisecond);
-        return audioStreamCapacity;
+        UInt32 byteCount = (UInt32)(timeSpan_ms * audioBytesPerMillisecond);
+        return byteCount;
     }
 
     #endregion

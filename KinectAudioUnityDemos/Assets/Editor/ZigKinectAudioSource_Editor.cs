@@ -40,6 +40,13 @@ public class ZigKinectAudioSource_Editor : Editor
     bool _oldNoiseSuppression;
 
 
+    [MenuItem("GameObject/Create Other/Zig Kinect Audio Source")]
+    static void CreateZigKinectAudioSource()
+    {
+        ZigKinectAudioSource zkas = ZigKinectAudioSource.Instance;
+    }
+    
+
     #region Init
 
     void OnEnable()
@@ -104,19 +111,30 @@ public class ZigKinectAudioSource_Editor : Editor
 
     void UpdateGui()
     {
+        GUIContent toolTip;
+
         GUILayout.BeginVertical();
         {
-            _guiBeamAngleMode = (ZigKinectAudioSource.ZigBeamAngleMode)EditorGUILayout.EnumPopup("Beam Angle Mode", _guiBeamAngleMode);
+            toolTip = new GUIContent("Beam Angle Mode", "How the beam angle is controlled.  If you need to determine the source angle of incoming sound, set this to Automatic.");
+            _guiBeamAngleMode = (ZigKinectAudioSource.ZigBeamAngleMode)EditorGUILayout.EnumPopup(toolTip, _guiBeamAngleMode);
+
             if (_guiBeamAngleMode == ZigKinectAudioSource.ZigBeamAngleMode.Manual)
             {
-                _guiManualBeamAngle = (int)EditorGUILayout.IntSlider("BeamAngle", _guiManualBeamAngle, (int)ZigKinectAudioSource.MinBeamAngle, (int)ZigKinectAudioSource.MaxBeamAngle);
+                toolTip = new GUIContent("Beam Angle", "The sound source angle (in degrees) that the audio array is currently focusing on.");
+                _guiManualBeamAngle = (int)EditorGUILayout.IntSlider(toolTip, _guiManualBeamAngle, (int)ZigKinectAudioSource.MinBeamAngle, (int)ZigKinectAudioSource.MaxBeamAngle);
                 _guiManualBeamAngle = (int)ZigKinectAudioSource.ConvertAngleToAcceptableBeamAngle_InDegrees(_guiManualBeamAngle);
             }
-            _guiEchoCancellationMode = (ZigKinectAudioSource.ZigEchoCancellationMode)EditorGUILayout.EnumPopup("Echo Cancellation Mode", _guiEchoCancellationMode);
-            _guiAutomaticGainControlEnabled = EditorGUILayout.Toggle("Automatic Gain Control", _guiAutomaticGainControlEnabled);
-            _guiNoiseSuppression = EditorGUILayout.Toggle("Noise Suppression", _guiNoiseSuppression);
+            toolTip = new GUIContent("Echo Cancellation Mode", "Enable this if sound will be simultaneously captured and played back by a computer speaker.");
+            _guiEchoCancellationMode = (ZigKinectAudioSource.ZigEchoCancellationMode)EditorGUILayout.EnumPopup(toolTip, _guiEchoCancellationMode);
 
-            ZigKinectAudioSource.verbose = EditorGUILayout.Toggle("Verbose", ZigKinectAudioSource.verbose);
+            toolTip = new GUIContent("Automatic Gain Control", "Effectively reduces the volume if the signal is strong and raises it when it is weaker.  Recommended for non-speech scenarios.");
+            _guiAutomaticGainControlEnabled = EditorGUILayout.Toggle(toolTip, _guiAutomaticGainControlEnabled);
+
+            toolTip = new GUIContent("Noise Suppression", "Suppresses or reduces stationary background noise in the audio signal.");
+            _guiNoiseSuppression = EditorGUILayout.Toggle(toolTip, _guiNoiseSuppression);
+
+            toolTip = new GUIContent("Verbose", "Whether or not to log frequent status updates");
+            ZigKinectAudioSource.verbose = EditorGUILayout.Toggle(toolTip, ZigKinectAudioSource.verbose);
 
             GUI_StartStopButton();
         }
@@ -125,9 +143,11 @@ public class ZigKinectAudioSource_Editor : Editor
 
     void GUI_StartStopButton()
     {
+        GUIContent toolTip;
         if (OkayToCallAudioSourcesMethodsAndProperties && _target.AudioCapturingHasStarted)
         {
-            if (GUILayout.Button("Stop"))
+            toolTip = new GUIContent("Stop", "Stop capturing audio");
+            if (GUILayout.Button(toolTip))
             {
                 _target.StopCapturingAudio();
             }
@@ -136,14 +156,18 @@ public class ZigKinectAudioSource_Editor : Editor
         {
             GUILayout.BeginHorizontal();
             {
-                if (GUILayout.Button("Start"))
+                toolTip = new GUIContent("Start", "Start capturing audio");
+                if (GUILayout.Button(toolTip))
                 {
                     if (OkayToCallAudioSourcesMethodsAndProperties)
                     {
                         _target.StartCapturingAudio(_guiReadStaleThreshold);
                     }
                 }
-                _guiReadStaleThreshold = (uint)EditorGUILayout.IntField("Read Stale Threshold", (int)_guiReadStaleThreshold);
+                toolTip = new GUIContent("Read Stale Threshold", "If there are no reads to the stream for longer than the time set here (in milliseconds), "
+                                        + "the buffered audio will be discarded. This prevents stale data from being returned in scenarios such as speech recognition, "
+                                        + "systems that display user dialogs, or other scenarios when the consumption of audio samples may be intermittent.");
+                _guiReadStaleThreshold = (uint)EditorGUILayout.IntField(toolTip, (int)_guiReadStaleThreshold);
             }
             GUILayout.EndHorizontal();
         }

@@ -5,13 +5,11 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 
-[RequireComponent(typeof(ZigBeamAngleViewer))]
-
 public class ZigKinectAudioViewer : MonoBehaviour
 {
     const string ClassName = "ZigKinectAudioViewer";
 
-    const int RefreshInterval_MS = 16;
+    const int AudioPollingInterval_MS = 50;
     const float MinAmplitude = 0.0f;
     const float MaxAmplitude = 1.0f;
 
@@ -33,19 +31,22 @@ public class ZigKinectAudioViewer : MonoBehaviour
 
 
     ZigKinectAudioSource _kinectAudioSource;
-    ZigBeamAngleViewer _beamAngleViewer;
 
     Stream _audioStream;
-    const int SamplesPerMillisecond = 16;
-    const int BytesPerSample = 2;
-    readonly byte[] _audioBuffer = new byte[ZigKinectAudioSource.CaptureAudioInterval_MS * SamplesPerMillisecond * BytesPerSample];
-
+    byte[] _audioBuffer;
     AudioToEnergy _audioToEnergy;
     float[] _energyBuffer;
     uint _energyBufferStartIndex;
 
     Color[] _blankCanvas;
     Texture2D _textureRef;
+
+
+    // Summary:
+    //     This delegate method is responsible for returning the screen area in which to render
+    //
+    public delegate Rect GetRenderingAreaDelegate(ZigKinectAudioViewer av);
+    public GetRenderingAreaDelegate getRenderingArea_Handler;
 
 
     #region Init and Destroy
@@ -56,10 +57,11 @@ public class ZigKinectAudioViewer : MonoBehaviour
 
         _kinectAudioSource = ZigKinectAudioSource.Instance;
 
-        _beamAngleViewer = GetComponent<ZigBeamAngleViewer>();
-        _beamAngleViewer.getRenderingAreaHandler = GetBeamAngleRenderingArea;
+        ZigKinectAudioSource.WAVEFORMAT wf = _kinectAudioSource.GetKinectWaveFormat();
+        UInt32 audioBufferSize = (UInt32)(AudioPollingInterval_MS * wf.AudioAverageBytesPerSecond * 0.001f);
+        _audioBuffer = new byte[audioBufferSize];
 
-        uint energyBufferSize = (uint)(textureWidth * 1.25f);
+        UInt32 energyBufferSize = (UInt32)(textureWidth);
         _energyBuffer = new float[energyBufferSize];
         _audioToEnergy = new AudioToEnergy(energyBufferSize);
 
@@ -119,34 +121,51 @@ public class ZigKinectAudioViewer : MonoBehaviour
 
     #region Update
 
-    bool _updateEnabled = false;
+    bool _updatingHasStarted = false;
     public void StartUpdating()
     {
-        if (verbose) { print(ClassName + "::StartUpdating"); }
+        if (verbose) { print(ClassName + " :: StartUpdating"); }
 
-        if (_updateEnabled)
+        if (_updatingHasStarted)
         {
             return;
         }
 
-        _audioStream = _kinectAudioSource.StartCapturingAudio();
+        _updatingHasStarted = true;
+        if (!TryStartCapturingAudio(out _audioStream))
+        {
+            _updatingHasStarted = false;
+            return;
+        }
 
         StartCoroutine(Update_Coroutine());
-
-        _updateEnabled = true;
+    }
+    Boolean TryStartCapturingAudio(out Stream audioStream)
+    {
+        audioStream = null;
+        try
+        {
+            audioStream = _kinectAudioSource.StartCapturingAudio();
+        }
+        catch
+        {
+            UnityEngine.Debug.LogError("ERROR in " + ClassName + ".  Failed to Start Capturing Audio.  Hint: Did you forget to create a GameObject with a \"Zig\" script attached?");
+            return false;
+        }
+        return true;
     }
     public void StopUpdating()
     {
         if (verbose) { print(ClassName + "::StopUpdating"); }
 
-        if (!_updateEnabled)
+        if (!_updatingHasStarted)
         {
             return;
         }
 
         StopCoroutine("Update_Coroutine");
 
-        _updateEnabled = false;
+        _updatingHasStarted = false;
     }
 
     IEnumerator Update_Coroutine()
@@ -156,7 +175,7 @@ public class ZigKinectAudioViewer : MonoBehaviour
             Stopwatch stopWatch = new Stopwatch();
             stopWatch.Start();
             {
-                if (_updateEnabled)
+                if (_updatingHasStarted)
                 {
                     Update_Tick();
                 }
@@ -164,17 +183,14 @@ public class ZigKinectAudioViewer : MonoBehaviour
             stopWatch.Stop();
 
             int elapsedTime = stopWatch.Elapsed.Milliseconds;
-            float waitTime = 0.001f * Mathf.Max(0, RefreshInterval_MS - elapsedTime);
+            float waitTime = 0.001f * Mathf.Max(0, AudioPollingInterval_MS - elapsedTime);
             yield return new WaitForSeconds(waitTime);
         }
     }
 
     void Update_Tick()
     {
-        GetLatestEnergy();
-
-        //PrintEnergyBuffer();
-        //PrintAudioBuffer();
+        GetLatestAudioAsEnergy();
 
         if (renderStyle == WaveRenderStyle.Dots)
         {
@@ -186,7 +202,7 @@ public class ZigKinectAudioViewer : MonoBehaviour
         }
     }
 
-    void GetLatestEnergy()
+    void GetLatestAudioAsEnergy()
     {
         int readCount = _audioStream.Read(_audioBuffer, 0, _audioBuffer.Length);
         _audioToEnergy.ConvertAudioToEnergy(_audioBuffer, readCount, ref _energyBuffer, out _energyBufferStartIndex);
@@ -246,39 +262,7 @@ public class ZigKinectAudioViewer : MonoBehaviour
             _textureRef.SetPixels((int)x, (int)lineStartY, 1, (int)lineHeight, waveformColors);
         }
 
-
         _textureRef.Apply();
-    }
-
-    Rect GetWaveformRenderingArea()
-    {
-        float tW = textureWidth;
-        float tH = textureHeight;
-        float sW = Screen.width;
-        float sH = Screen.height;
-
-        // Define Bottom-Center Area
-        float bvHeight = _beamAngleViewer.textureHeight;
-        float yPad = 20;
-        float x = 0.5f * (sW - tW);
-        float y = sH - tH - yPad - bvHeight;
-
-        return new Rect(x, y, tW, tH);
-    }
-
-    Rect GetBeamAngleRenderingArea(ZigBeamAngleViewer bv)
-    {
-        Rect wfArea = GetWaveformRenderingArea();
-
-        // Render the BeamAngleView directly beneath the waveform view
-        float tW = bv.textureWidth;
-        float tH = bv.textureHeight;
-
-        float yPad = 10;
-        float x = wfArea.x;
-        float y = wfArea.yMax + yPad;
-
-        return new Rect(x, y, tW, tH);
     }
 
     #endregion
@@ -288,7 +272,28 @@ public class ZigKinectAudioViewer : MonoBehaviour
 
     void OnGUI()
     {
-        GUI.DrawTexture(GetWaveformRenderingArea(), _textureRef);
+        GUI.DrawTexture(GetRenderingArea(), _textureRef);
+    }
+
+    Rect GetRenderingArea()
+    {
+        GetRenderingAreaDelegate handler = (null == getRenderingArea_Handler) ? GetRenderingArea_Default : getRenderingArea_Handler;
+        return (handler(this));
+    }
+
+    Rect GetRenderingArea_Default(ZigKinectAudioViewer av)
+    {
+        float tW = av.textureWidth;
+        float tH = av.textureHeight;
+        float sW = Screen.width;
+        float sH = Screen.height;
+
+        // Define Bottom-Center Area
+        float yPad = 10;
+        float x = 0.5f * (sW - tW);
+        float y = sH - tH - yPad;
+
+        return new Rect(x, y, tW, tH);
     }
 
     #endregion
@@ -301,14 +306,20 @@ public class ZigKinectAudioViewer : MonoBehaviour
         if (verbose) { print(ClassName + " :: AudioCapturingStarted_Handler"); }
 
         _audioStream = e.AudioStream;
-        StartUpdating();
+        if (!_updatingHasStarted)
+        {
+            StartUpdating();
+        }
     }
 
     void AudioCapturingStopped_Handler(object sender, EventArgs e)
     {
         if (verbose) { print(ClassName + " :: AudioCapturingStopped_Handler"); }
 
-        StopUpdating();
+        if (_updatingHasStarted)
+        {
+            StopUpdating();
+        }
         _audioStream = null;
     }
 

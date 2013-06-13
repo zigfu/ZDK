@@ -1,12 +1,15 @@
 using UnityEngine;
 using System;
 
-public static class MathHelper {
+
+public static class MathHelper
+{
 
     // Summary:
     //      When inValue = r0Min, returns r1Min.
     //      When inValue = r0Max, returns r1Max. 
     //      When inValue = the average of r0Min and r0Max, returns the average of r1Min and r1Max. 
+    //
     public static float ConvertFromRangeToRange(float r0Min, float r0Max, float r1Min, float r1Max, float inValue)
     {
         if (r0Min >= r0Max)

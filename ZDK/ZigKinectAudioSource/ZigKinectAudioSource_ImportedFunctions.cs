@@ -1,13 +1,15 @@
 ﻿using UnityEngine;
 using System;
 using System.Runtime.InteropServices;
+using ZDK.Utility;
 
 
 // Summary:
 //      Declares Functions Imported from ZigNativeKinectAudioSourceDll.dll.
 //      Main class definition exists in ZigKinectAudioSource.cs.
 //      Partial class definition also exists in ZigKinectAudioSource_CaptureAudio.cs.
-public sealed partial class ZigKinectAudioSource : MonoBehaviour
+//
+public sealed partial class ZigKinectAudioSource : Singleton<ZigKinectAudioSource>
 {
 
     const String AS_DLL_DIR = @"Assets/Zigfu/Scripts/_Internal/";
