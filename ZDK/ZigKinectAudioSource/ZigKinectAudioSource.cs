@@ -380,7 +380,7 @@ public sealed partial class ZigKinectAudioSource : Singleton<ZigKinectAudioSourc
     }
     // Summary:
     //		Returns a struct that describes the Kinects audio format
-    public WAVEFORMAT GetKinectWaveFormat()
+    public WaveFormat GetKinectWaveFormat()
     {
         return AS_GetKinectWaveFormat();
     }
@@ -401,7 +401,7 @@ public sealed partial class ZigKinectAudioSource : Singleton<ZigKinectAudioSourc
 
     public void PrintKinectAudioFormat()
     {
-        WAVEFORMAT wf = GetKinectWaveFormat();
+        WaveFormat wf = GetKinectWaveFormat();
         StringBuilder sb = new StringBuilder();
 
         sb.Append("--------------  PrintKinectAudioFormat  -------------");

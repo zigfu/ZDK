@@ -1,4 +1,4 @@
-﻿Build started 6/11/2013 11:30:34 AM.
+﻿Build started 6/13/2013 5:11:24 PM.
      1>Project "C:\Users\Randy\Documents\GitHub\ZDK\ZigNativeKinectAudioSourceDll\ZigNativeKinectAudioSourceDll.vcxproj" on node 3 (Rebuild target(s)).
      1>ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /I"C:\Program Files\Microsoft SDKs\Kinect\v1.7\inc" /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _WINDOWS /D _USRDLL /D ZIGNATIVEAUDIOBEAMDLL_EXPORTS /D _WINDLL /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yc"stdafx.h" /Fp"Debug\ZigNativeKinectAudioSourceDll.pch" /Fo"Debug\\" /Fd"Debug\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt ZigNativeKinectAudioSourceDll.cpp
@@ -16,4 +16,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:03.97
+Time Elapsed 00:00:03.36

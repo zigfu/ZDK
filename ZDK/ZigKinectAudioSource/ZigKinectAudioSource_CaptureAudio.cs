@@ -18,13 +18,13 @@ using ZDK.Utility;
 //
 public sealed partial class ZigKinectAudioSource : Singleton<ZigKinectAudioSource>
 {
-    public const UInt32 DefaultReadStaleThreshold_Milliseconds = 2000;
+    public const UInt32 DefaultReadStaleThreshold_Milliseconds = 500;
     const UInt32 CaptureAudioInterval_MS = 30;
 
 
     public UInt32 ReadStaleThreshold_Milliseconds {
         get {
-            return (_audioStream == null) ? DefaultReadStaleThreshold_Milliseconds : (UInt32)_audioStream.ReadStaleThreshold.TotalMilliseconds;
+            return (_audioStream == null) ? DefaultReadStaleThreshold_Milliseconds : GetTimeSpanMSForAudioStreamByteCount(_audioStream.ReadStaleThreshold_Bytes);
         }
     }
     public bool AudioCapturingHasStarted { get; private set; }
@@ -110,9 +110,10 @@ public sealed partial class ZigKinectAudioSource : Singleton<ZigKinectAudioSourc
             Initialize();
         }
 
-        _audioStream = new AudioStream(readStaleThreshold);
+        uint readStaleThreshold_bytes = GetAudioStreamByteCountForTimeSpan_MS((uint)readStaleThreshold.TotalMilliseconds);
+        _audioStream = new AudioStream(readStaleThreshold_bytes);
 
-        StartCoroutine(CaptureAudio_Coroutine());
+        StartCoroutine(CaptureAudio_Coroutine_MethodName);
 
         AudioCapturingHasStarted = true;
         OnAudioCapturingStarted();
@@ -134,7 +135,7 @@ public sealed partial class ZigKinectAudioSource : Singleton<ZigKinectAudioSourc
 
         AudioCapturingHasStarted = false;
 
-        StopCoroutine("CaptureAudio_Coroutine");
+        StopCoroutine(CaptureAudio_Coroutine_MethodName);
         _audioStream.Close();
 
         OnAudioCapturingStopped();
@@ -142,6 +143,7 @@ public sealed partial class ZigKinectAudioSource : Singleton<ZigKinectAudioSourc
 
     // Summary:
     //      Calls CaptureAudio_Tick every CaptureAudioInterval_MS milliseconds
+    const string CaptureAudio_Coroutine_MethodName = "CaptureAudio_Coroutine";
     IEnumerator CaptureAudio_Coroutine()
     {
         while (true)
@@ -196,10 +198,18 @@ public sealed partial class ZigKinectAudioSource : Singleton<ZigKinectAudioSourc
 
     UInt32 GetAudioStreamByteCountForTimeSpan_MS(UInt32 timeSpan_ms)
     {
-        WAVEFORMAT wf = GetKinectWaveFormat();
-        float audioBytesPerMillisecond = wf.AudioSamplesPerSecond * wf.AudioBlockAlign * 0.001f;
+        WaveFormat wf = GetKinectWaveFormat();
+        float audioBytesPerMillisecond = wf.AudioAverageBytesPerSecond * 0.001f;
         UInt32 byteCount = (UInt32)(timeSpan_ms * audioBytesPerMillisecond);
         return byteCount;
+    }
+
+    UInt32 GetTimeSpanMSForAudioStreamByteCount(UInt32 byteCount)
+    {
+        WaveFormat wf = GetKinectWaveFormat();
+        float audioBytesPerMillisecond = wf.AudioAverageBytesPerSecond * 0.001f;
+        UInt32 timeSpan_ms = (UInt32)(byteCount / audioBytesPerMillisecond);
+        return timeSpan_ms;
     }
 
     #endregion

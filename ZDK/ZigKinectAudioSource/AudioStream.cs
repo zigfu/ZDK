@@ -6,11 +6,10 @@ namespace ZDK.ZigKinectAudioSource
 {
     class AudioStream : MemoryStream
     {
-        const UInt32 MaxCapacity = 32000 * 60 * 10;     // (10 minutes of 32 kb/s audio)
+        const UInt32 MaxCapacity = 32000 * 60 * 10;     // (10 minutes of 32 kbps audio)
 
 
-        DateTime _timeOfLastSuccessfulRead = DateTime.Now;
-        public TimeSpan ReadStaleThreshold { get; private set; }
+        public UInt32 ReadStaleThreshold_Bytes { get; private set; }
 
         public override bool CanRead    { get { return true; } }
         public override bool CanWrite   { get { return false; } }
@@ -45,22 +44,13 @@ namespace ZDK.ZigKinectAudioSource
 
         #region Init
 
-        public AudioStream() : this(TimeSpan.MaxValue) { }
-        public AudioStream(TimeSpan readStaleThreshold)
+        public AudioStream() : this(UInt32.MaxValue) { }
+        public AudioStream(uint readStaleThreshold_bytes)
         {
-            ReadStaleThreshold = readStaleThreshold;
-            _timeOfLastSuccessfulRead = DateTime.Now;
+            ReadStaleThreshold_Bytes = readStaleThreshold_bytes;
         }
 
         #endregion
-
-
-        public override int Read(byte[] buffer, int offset, int count)
-        {
-            int readCount = base.Read(buffer, offset, count);
-            _timeOfLastSuccessfulRead = DateTime.Now;
-            return readCount;
-        }
 
 
         public void AppendBytes(byte[] buffer, int offset, uint count)
@@ -79,10 +69,11 @@ namespace ZDK.ZigKinectAudioSource
 
         void EnforceReadStaleThreshold()
         {
-            TimeSpan timeSinceLastSuccessfulRead = DateTime.Now.Subtract(_timeOfLastSuccessfulRead);
-            if (timeSinceLastSuccessfulRead.CompareTo(ReadStaleThreshold) >= 0)
+            long numUnreadBytes = base.Length - base.Position;
+            if (numUnreadBytes > ReadStaleThreshold_Bytes)
             {
-                Reset();
+                long cutoffPoint = base.Length - ReadStaleThreshold_Bytes;
+                DiscardOldSamples(cutoffPoint);
             }
         }
 
@@ -114,13 +105,6 @@ namespace ZDK.ZigKinectAudioSource
             base.SetLength(newLength);
 
             base.Position = newPosition;
-        }
-
-        void Reset()
-        {
-            base.Position = 0;
-            base.SetLength(0);
-            _timeOfLastSuccessfulRead = DateTime.Now;
         }
     }
 }

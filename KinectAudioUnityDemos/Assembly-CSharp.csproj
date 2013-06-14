@@ -60,6 +60,7 @@
      <Compile Include="Assets\ZigFu\Scripts\UserEngagers\ZigEngageSplitScreen.cs" />
      <Compile Include="Assets\ZigFu\Scripts\Viewers\Audio\AudioToEnergy.cs" />
      <Compile Include="Assets\ZigFu\Scripts\Viewers\Audio\ZigKinectAudioViewer.cs" />
+     <Compile Include="Assets\ZigFu\Scripts\Viewers\Audio\ZigKinectAudioViewer3D.cs" />
      <Compile Include="Assets\ZigFu\Scripts\Viewers\Audio\ZigKinectBeamAngleViewer.cs" />
      <Compile Include="Assets\ZigFu\Scripts\Viewers\Audio\ZigKinectFullAudioViewer.cs" />
      <Compile Include="Assets\ZigFu\Scripts\Viewers\ZigDepthViewer.cs" />

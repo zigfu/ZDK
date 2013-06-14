@@ -19,7 +19,7 @@ public sealed partial class ZigKinectAudioSource : Singleton<ZigKinectAudioSourc
     // Summary:
     //      Managed equivalent of WAVEFORMATEX
     [StructLayout(LayoutKind.Sequential)]
-    public struct WAVEFORMAT
+    public struct WaveFormat
     {
         public UInt16 AudioFormat;
         public UInt16 AudioChannels;
@@ -43,17 +43,17 @@ public sealed partial class ZigKinectAudioSource : Singleton<ZigKinectAudioSourc
     [DllImport(AS_DLL_PATH)]  static extern Int32 AS_SetNoiseSuppressionEnabled(Boolean doEnable);
     [DllImport(AS_DLL_PATH)]  static extern Int32 AS_GetNoiseSuppressionEnabled(out Boolean outEnabled);
 
-    [DllImport(AS_DLL_PATH)]  static extern Int32 AS_SetAcousticEchoCancellationLength(UInt32 newLength);
-    [DllImport(AS_DLL_PATH)]  static extern Int32 AS_GetAcousticEchoCancellationLength(out UInt32 outLength);
-    [DllImport(AS_DLL_PATH)]  static extern Int32 AS_SetAcousticEchoSuppressionCount(UInt32 newCount);
-    [DllImport(AS_DLL_PATH)]  static extern Int32 AS_GetAcousticEchoSuppressionCount(out UInt32 outCount);
+    [DllImport(AS_DLL_PATH)]  static extern Int32 AS_SetAcousticEchoCancellationLength(Int64 newLength);
+    [DllImport(AS_DLL_PATH)]  static extern Int32 AS_GetAcousticEchoCancellationLength(out Int64 outLength);
+    [DllImport(AS_DLL_PATH)]  static extern Int32 AS_SetAcousticEchoSuppressionCount(Int64 newCount);
+    [DllImport(AS_DLL_PATH)]  static extern Int32 AS_GetAcousticEchoSuppressionCount(out Int64 outCount);
 
     [DllImport(AS_DLL_PATH)]  static extern Int32 AS_InitializeAudioSource(Boolean doInitializeKinect);
     [DllImport(AS_DLL_PATH)]  static extern Int32 AS_CaptureAudio(UInt32 bufferSize, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 0)] Byte[] buffer, out UInt32 numSamplesCaptured);
     [DllImport(AS_DLL_PATH)]  static extern void AS_Shutdown();
 
     [DllImport(AS_DLL_PATH)]  static extern UInt32 AS_GetAudioBufferMaxCapacity();
-    [DllImport(AS_DLL_PATH)]  static extern WAVEFORMAT AS_GetKinectWaveFormat();
+    [DllImport(AS_DLL_PATH)]  static extern WaveFormat AS_GetKinectWaveFormat();
     [DllImport(AS_DLL_PATH)]  static extern IntPtr AS_GetLastRecordedErrorMessage();
 
 }

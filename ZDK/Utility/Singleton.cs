@@ -21,6 +21,8 @@ namespace ZDK.Utility
                     _instance = (T)FindObjectOfType(typeof(T));
                     if (_instance == null)
                     {
+                        print("Singleton :: Creating Singleton instance of type " + typeof(T).ToString());
+
                         GameObject go = new GameObject();
                         DontDestroyOnLoad(go);
                         go.name = typeof(T).ToString();

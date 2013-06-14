@@ -10,17 +10,15 @@ public class ZigKinectAudioViewer : MonoBehaviour
     const string ClassName = "ZigKinectAudioViewer";
 
     const int AudioPollingInterval_MS = 50;
-    const float MinAmplitude = 0.0f;
-    const float MaxAmplitude = 1.0f;
 
 
     public static bool verbose = true;
 
     public Renderer targetRenderer;
-    public int textureWidth = 780;
-    public int textureHeight = 100;
+    public int textureWidth = 360;
+    public int textureHeight = 70;
     public Color backgroundColor = Color.black;
-    public Color waveformColor = Color.green;
+    public Color waveformColor = Color.white;
 
     public enum WaveRenderStyle
     {
@@ -34,7 +32,6 @@ public class ZigKinectAudioViewer : MonoBehaviour
 
     Stream _audioStream;
     byte[] _audioBuffer;
-    AudioToEnergy _audioToEnergy;
     float[] _energyBuffer;
     uint _energyBufferStartIndex;
 
@@ -57,13 +54,7 @@ public class ZigKinectAudioViewer : MonoBehaviour
 
         _kinectAudioSource = ZigKinectAudioSource.Instance;
 
-        ZigKinectAudioSource.WAVEFORMAT wf = _kinectAudioSource.GetKinectWaveFormat();
-        UInt32 audioBufferSize = (UInt32)(AudioPollingInterval_MS * wf.AudioAverageBytesPerSecond * 0.001f);
-        _audioBuffer = new byte[audioBufferSize];
-
-        UInt32 energyBufferSize = (UInt32)(textureWidth);
-        _energyBuffer = new float[energyBufferSize];
-        _audioToEnergy = new AudioToEnergy(energyBufferSize);
+        InitAudioAndEnergyBuffers();
 
         CreateBlankCanvas();
         _textureRef = InitTexture();
@@ -74,6 +65,17 @@ public class ZigKinectAudioViewer : MonoBehaviour
         _kinectAudioSource.AudioCapturingStopped += AudioCapturingStopped_Handler;
 
         StartUpdating();
+    }
+
+    void InitAudioAndEnergyBuffers()
+    {
+        ZigKinectAudioSource.WaveFormat wf = _kinectAudioSource.GetKinectWaveFormat();
+        UInt32 audioBufferSize = (UInt32)(AudioPollingInterval_MS * wf.AudioAverageBytesPerSecond * 0.001f);
+        _audioBuffer = new byte[audioBufferSize];
+
+        UInt32 energyBufferSize = (UInt32)(textureWidth);
+        _energyBuffer = new float[energyBufferSize];
+        ClearEnergyBufferValues(energyBufferSize);
     }
 
     void CreateBlankCanvas()
@@ -108,7 +110,7 @@ public class ZigKinectAudioViewer : MonoBehaviour
 
     void OnDestroy()
     {
-        if (verbose) { print(ClassName + "::OnDestroy"); }
+        if (verbose) { print(ClassName + " :: OnDestroy"); }
 
         StopUpdating();
 
@@ -138,7 +140,7 @@ public class ZigKinectAudioViewer : MonoBehaviour
             return;
         }
 
-        StartCoroutine(Update_Coroutine());
+        StartCoroutine(Update_Coroutine_MethodName);
     }
     Boolean TryStartCapturingAudio(out Stream audioStream)
     {
@@ -156,18 +158,19 @@ public class ZigKinectAudioViewer : MonoBehaviour
     }
     public void StopUpdating()
     {
-        if (verbose) { print(ClassName + "::StopUpdating"); }
+        if (verbose) { print(ClassName + " :: StopUpdating"); }
 
         if (!_updatingHasStarted)
         {
             return;
         }
 
-        StopCoroutine("Update_Coroutine");
+        StopCoroutine(Update_Coroutine_MethodName);
 
         _updatingHasStarted = false;
     }
 
+    const string Update_Coroutine_MethodName = "Update_Coroutine";
     IEnumerator Update_Coroutine()
     {
         while (true)
@@ -205,7 +208,9 @@ public class ZigKinectAudioViewer : MonoBehaviour
     void GetLatestAudioAsEnergy()
     {
         int readCount = _audioStream.Read(_audioBuffer, 0, _audioBuffer.Length);
-        _audioToEnergy.ConvertAudioToEnergy(_audioBuffer, readCount, ref _energyBuffer, out _energyBufferStartIndex);
+
+        uint numEnergySamplesCreated = AudioToEnergy.Convert(_audioBuffer, readCount, _energyBuffer, _energyBufferStartIndex);
+        _energyBufferStartIndex = (_energyBufferStartIndex + numEnergySamplesCreated) % (uint)_energyBuffer.Length;
     }
 
     #endregion
@@ -229,7 +234,7 @@ public class ZigKinectAudioViewer : MonoBehaviour
         {
             float sample = _energyBuffer[(_energyBufferStartIndex + i) % numSamples];
             int x = (int)(widthRatio * i);
-            int y = (int)MathHelper.ConvertFromRangeToRange(MinAmplitude, MaxAmplitude, 0, textureHeight, sample);
+            int y = (int)MathHelper.ConvertFromRangeToRange(AudioToEnergy.MinEnergyValue, AudioToEnergy.MaxEnergyValue, 0, textureHeight, sample);
             _textureRef.SetPixel(x, y, waveformColor);
         }
 
@@ -255,7 +260,7 @@ public class ZigKinectAudioViewer : MonoBehaviour
             float sample = _energyBuffer[(_energyBufferStartIndex + i) % numSamples];
             uint x = (uint)(widthRatio * i);
 
-            float amp = Mathf.Abs(MathHelper.ConvertFromRangeToRange(MinAmplitude, MaxAmplitude, -halfHeight, halfHeight, sample));
+            float amp = Mathf.Abs(MathHelper.ConvertFromRangeToRange(AudioToEnergy.MinEnergyValue, AudioToEnergy.MaxEnergyValue, -halfHeight, halfHeight, sample));
             uint lineStartY = (uint)(halfHeight - amp);
             uint lineHeight = (uint)(2 * amp);
 
@@ -327,6 +332,16 @@ public class ZigKinectAudioViewer : MonoBehaviour
 
 
     #region Helper Methods
+
+    void ClearEnergyBufferValues(uint numSamplesToClear)
+    {
+        for (int i = 0; i < numSamplesToClear; i++)
+        {
+            int idx = ((int)_energyBufferStartIndex + i) % _energyBuffer.Length;
+            _energyBuffer[idx] = 0.5f;
+        }
+    }
+
 
     void PrintAudioBuffer(int readCount)
     {
