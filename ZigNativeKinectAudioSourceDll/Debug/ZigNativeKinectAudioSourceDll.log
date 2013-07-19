@@ -1,19 +1,53 @@
-﻿Build started 6/13/2013 5:11:24 PM.
-     1>Project "C:\Users\Randy\Documents\GitHub\ZDK\ZigNativeKinectAudioSourceDll\ZigNativeKinectAudioSourceDll.vcxproj" on node 3 (Rebuild target(s)).
+﻿Build started 7/11/2013 11:51:00 PM.
+     1>Project "C:\Users\Randy\Documents\GitHub\ZDK\ZigNativeKinectAudioSourceDll\ZigNativeKinectAudioSourceDll.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /I"C:\Program Files\Microsoft SDKs\Kinect\v1.7\inc" /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _WINDOWS /D _USRDLL /D ZIGNATIVEAUDIOBEAMDLL_EXPORTS /D _WINDLL /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yc"stdafx.h" /Fp"Debug\ZigNativeKinectAudioSourceDll.pch" /Fo"Debug\\" /Fd"Debug\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt ZigNativeKinectAudioSourceDll.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _WINDOWS /D _USRDLL /D _WINDLL /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MTd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yc"stdafx.h" /Fp"Debug\ZigNativeKinectAudioSourceDll.pch" /Fo"Debug\\" /Fd"Debug\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt ZigNativeKinectAudioSourceDll.cpp
          ZigNativeKinectAudioSourceDll.cpp
+     1>c:\program files (x86)\microsoft visual studio 11.0\vc\include\xutility(2089): warning C4244: '=' : conversion from 'wchar_t' to 'char', possible loss of data
+                 c:\program files (x86)\microsoft visual studio 11.0\vc\include\xutility(2110) : see reference to function template instantiation '_OutIt std::_Copy_impl<_InIt,_OutIt>(_InIt,_InIt,_OutIt,std::_Nonscalar_ptr_iterator_tag)' being compiled
+                 with
+                 [
+                     _OutIt=char *,
+                     _InIt=wchar_t *
+                 ]
+                 c:\program files (x86)\microsoft visual studio 11.0\vc\include\xutility(2141) : see reference to function template instantiation '_OutIt std::_Copy_impl<_InIt,char*>(_InIt,_InIt,_OutIt)' being compiled
+                 with
+                 [
+                     _OutIt=char *,
+                     _InIt=wchar_t *
+                 ]
+                 c:\program files (x86)\microsoft visual studio 11.0\vc\include\xutility(2151) : see reference to function template instantiation '_OutIt std::_Copy_impl<_InIt,_OutIt>(_InIt,_InIt,_OutIt,std::random_access_iterator_tag,std::random_access_iterator_tag)' being compiled
+                 with
+                 [
+                     _OutIt=std::_String_iterator<std::_String_val<std::_Simple_types<char>>>,
+                     _InIt=wchar_t *
+                 ]
+                 c:\program files (x86)\microsoft visual studio 11.0\vc\include\xutility(2176) : see reference to function template instantiation '_OutIt std::_Copy_impl<wchar_t*,_OutIt>(_InIt,_InIt,_OutIt,std::true_type)' being compiled
+                 with
+                 [
+                     _OutIt=std::_String_iterator<std::_String_val<std::_Simple_types<char>>>,
+                     _InIt=wchar_t *
+                 ]
+                 c:\users\randy\documents\github\zdk\zignativekinectaudiosourcedll\stringhelper.h(34) : see reference to function template instantiation '_OutIt std::copy<std::_String_iterator<_Mystr>,std::_String_iterator<std::_String_val<_Val_types>>>(_InIt,_InIt,_OutIt)' being compiled
+                 with
+                 [
+                     _OutIt=std::_String_iterator<std::_String_val<std::_Simple_types<char>>>,
+                     _Mystr=std::_String_val<std::_Simple_types<wchar_t>>,
+                     _Val_types=std::_Simple_types<char>,
+                     _InIt=std::_String_iterator<std::_String_val<std::_Simple_types<wchar_t>>>
+                 ]
        Link:
-         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Randy\Documents\GitHub\ZDK\Debug\ZigNativeKinectAudioSourceDll.dll" /INCREMENTAL /NOLOGO /LIBPATH:"C:\Program Files\Microsoft SDKs\Kinect\v1.7\lib\x86" Msdmo.lib dmoguids.lib amstrmid.lib Kinect10.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\Randy\Documents\GitHub\ZDK\Debug\ZigNativeKinectAudioSourceDll.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Randy\Documents\GitHub\ZDK\Debug\ZigNativeKinectAudioSourceDll.lib" /MACHINE:X86 /DLL Debug\ZigNativeKinectAudioSourceDll.obj
-            Creating library C:\Users\Randy\Documents\GitHub\ZDK\Debug\ZigNativeKinectAudioSourceDll.lib and object C:\Users\Randy\Documents\GitHub\ZDK\Debug\ZigNativeKinectAudioSourceDll.exp
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Randy\Documents\GitHub\ZDK\Debug\ZigNativeKinectAudioSourceDll.dll" /INCREMENTAL /NOLOGO /LIBPATH:"C:\Program Files\Microsoft SDKs\Kinect\v1.7\\lib\x86" Msdmo.lib dmoguids.lib amstrmid.lib avrt.lib kernel32.lib user32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib Kinect10.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\Randy\Documents\GitHub\ZDK\Debug\ZigNativeKinectAudioSourceDll.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Randy\Documents\GitHub\ZDK\Debug\ZigNativeKinectAudioSourceDll.lib" /MACHINE:X86 /DLL Debug\KinectAudioStream.obj
+         Debug\SimpleSpeechRecognizer.obj
+         Debug\ZigNativeKinectAudioSourceDll.obj
          ZigNativeKinectAudioSourceDll.vcxproj -> C:\Users\Randy\Documents\GitHub\ZDK\Debug\ZigNativeKinectAudioSourceDll.dll
        PostBuildEvent:
-         xcopy "C:\Users\Randy\Documents\GitHub\ZDK\Debug\ZigNativeKinectAudioSourceDll.dll" "C:\Users\Randy\Documents\GitHub\ZDK\\KinectAudioUnityDemos\Assets\ZigFu\Scripts\_Internal\" /s /i /y
+         xcopy "C:\Users\Randy\Documents\GitHub\ZDK\Debug\ZigNativeKinectAudioSourceDll.dll" "C:\Users\Randy\Documents\GitHub\ZDK\\KinectAudioUnityDemos\" /s /i /y
          :VCEnd
          C:\Users\Randy\Documents\GitHub\ZDK\Debug\ZigNativeKinectAudioSourceDll.dll
          1 File(s) copied
-     1>Done Building Project "C:\Users\Randy\Documents\GitHub\ZDK\ZigNativeKinectAudioSourceDll\ZigNativeKinectAudioSourceDll.vcxproj" (Rebuild target(s)).
+     1>Done Building Project "C:\Users\Randy\Documents\GitHub\ZDK\ZigNativeKinectAudioSourceDll\ZigNativeKinectAudioSourceDll.vcxproj" (Build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:03.36
+Time Elapsed 00:00:03.47

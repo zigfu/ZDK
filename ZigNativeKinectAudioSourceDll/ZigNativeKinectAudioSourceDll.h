@@ -1,56 +1,12 @@
 #pragma once
 
-#define _USE_MATH_DEFINES
-#include <math.h>
-#include <string>
-#include <NuiApi.h>				// For Kinect SDK APIs
 #include <dmo.h>				// For IMediaObject and related interfaces
-#include <wmcodecdsp.h>			// For configuring DMO properties
 #include <mmreg.h>				// For WAVEFORMATEX
-#include <uuids.h>				// For FORMAT_WaveFormatEx and such
-
-#include "StaticMediaBuffer.h"
-#include "KinectAudioSpecs.h"
-
-
-// ----------------------- Constants and Enums ---------------------------
-
-// The BeamAngle may be set to angles in the range of [-50 to 50] degrees, in increments of 10.
-const int iMinBeamAngleValue = 0;		// corresponds to -50 degrees
-const int iMaxBeamAngleValue = 10;		// corresponds to 50 degrees
-const int iBeamAngleIncrement = 10;	
-
-const MIC_ARRAY_MODE iManualBeamMode = MICARRAY_EXTERN_BEAM;		// MICARRAY_EXTERN_BEAM is the only MIC_ARRAY_MODE that allows manual setting of the BeamAngle
-const MIC_ARRAY_MODE iAutomaticBeamMode = MICARRAY_SINGLE_BEAM;		// MICARRAY_SINGLE_BEAM is the standard MIC_ARRAY_MODE for automatic BeamAngle setting
-
-// Contains the possible AEC_SYSTEM_MODE's to which the Kinect Mic Array may be set
-// (OPTIBEAM = Automatic Beamforming.  AEC = Acoustic Echo Cancellation)
-enum MicrophoneMode
-{ 
-	MICMODE_SINGLE_CHANNEL			= SINGLE_CHANNEL_NSAGC,			
-	MICMODE_SINGLE_CHANNEL_AEC		= SINGLE_CHANNEL_AEC,
-	MICMODE_OPTIBEAM_ARRAY_ONLY		= OPTIBEAM_ARRAY_ONLY,			// This is the Standard mode
-	MICMODE_OPTIBEAM_ARRAY_AND_AEC	= OPTIBEAM_ARRAY_AND_AEC,		// Use this if you expect to have sound playing from speakers
-};
-static const MicrophoneMode iDefaultMicrophoneMode = MICMODE_OPTIBEAM_ARRAY_AND_AEC;
-
-
-// ------------------------------- Vars --------------------------------------
-
-    INuiSensor*             m_pNuiSensor;			// Primary access to the Kinect device
-    INuiAudioBeam*          m_pNuiAudioSource;		// Used to query Kinect audio beam and sound source angles.
-    IMediaObject*           m_pDMO;					// Media object from which Kinect audio stream is captured.
-    IPropertyStore*         m_pPropertyStore;		// Used to configure Kinect audio properties.
-    StaticMediaBuffer       m_audioOutputBuffer;	// Holds captured audio data.
-
-	double m_beamAngleInRadians = 0;
-	double m_sourceAngle = 0;
-	double m_sourceConfidence = 0;
 
 
 extern "C" 
 {
-	// --------------------- Exported Function Declarations --------------------------
+	// --------------------- Properties --------------------------
 
 	// Summary:
 	//		The large, constant, maximum capacity of m_audioOutputBuffer.
@@ -105,6 +61,12 @@ extern "C"
 	//		Returns a struct that describes the Kinects audio format
 	WAVEFORMATEX EXPORT_API AS_GetKinectWaveFormat();
 
+	HRESULT EXPORT_API AS_SetLockDownEnabled (bool doEnable);
+	HRESULT EXPORT_API AS_GetLockDownEnabled (bool &outEnabled);
+
+
+	// --------------------- Functions --------------------------
+
 	// Summary:
 	//		Initialize Kinect audio capture/control objects.
 	//		If doInitializeKinect is true then Kinect will be initialized via INuiSensor::NuiInitialize(),
@@ -126,34 +88,14 @@ extern "C"
 
 	// Summary:
 	//		Releases all memory allocated within ZigNativeAudioSourceDll
-	void EXPORT_API AS_Shutdown();
+	void EXPORT_API AS_Destroy();
 
 	// Summary:
 	//		If a method returns an HRESULT less than 0, an error message will have been set.
 	//		This function returns that error message, then erases it
-	EXPORT_API const char* AS_GetLastRecordedErrorMessage();
+	EXPORT_API const char* AS_GetLastRecordedErrorMessage(bool doClearMessage = false);
 
-	// ----------------------- Internal Function Declarations ---------------------------
-
-	HRESULT CreateSensor();
-	HRESULT InitializeKinect(INuiSensor* sensor);
-	HRESULT ConfigureAudioSource();
-	HRESULT SetDmoOutputFormat();
-
-	void UpdateBeamAndSourceAngle();
-
-	HRESULT SetFeatureModeEnabled (bool doEnable);
-	HRESULT GetFeatureModeEnabled (bool *outEnabled);
-	void EnsureFeatureModeIsEnabled ();
-
-	HRESULT SetMicrophoneMode(MicrophoneMode newMode);
-	HRESULT GetMicrophoneMode (MicrophoneMode *outMode);
-
-	HRESULT SetMicArrayProcessingMode(MIC_ARRAY_MODE newMode);
-	HRESULT GetMicArrayProcessingMode (MIC_ARRAY_MODE *outMode);
-
-	void CopyAudioBuffer(DWORD elemCnt, BYTE buffer[]);
-
-	void AppendToErrorMessage(std::string message);
-	void ClearLastRecordedErrorMessage();
 }
+
+
+bool TryGetDmo(IMediaObject** out_pDMO);     	

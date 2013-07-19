@@ -44,6 +44,14 @@
 	</Reference>
   </ItemGroup>
   <ItemGroup>
+     <Compile Include="Assets\Zig Audio and Speech\Demos\Speech Demo\MenuController.cs" />
+     <Compile Include="Assets\Zig Audio and Speech\Demos\Speech Demo\MenuSpeechInterface.cs" />
+     <Compile Include="Assets\Zig Audio and Speech\Viewers\AudioToEnergy.cs" />
+     <Compile Include="Assets\Zig Audio and Speech\Viewers\ZigKinectAudioViewer.cs" />
+     <Compile Include="Assets\Zig Audio and Speech\Viewers\ZigKinectAudioViewer3D.cs" />
+     <Compile Include="Assets\Zig Audio and Speech\Viewers\ZigKinectBeamAngleViewer.cs" />
+     <Compile Include="Assets\Zig Audio and Speech\Viewers\ZigKinectFullAudioViewer.cs" />
+     <Compile Include="Assets\Zig Audio and Speech\Viewers\ZigSpeechViewer.cs" />
      <Compile Include="Assets\ZigFu\Scripts\UISessionControls\ZigFader.cs" />
      <Compile Include="Assets\ZigFu\Scripts\UISessionControls\ZigFollowHandPoint.cs" />
      <Compile Include="Assets\ZigFu\Scripts\UISessionControls\ZigPushDetector.cs" />
@@ -58,11 +66,6 @@
      <Compile Include="Assets\ZigFu\Scripts\UserEngagers\ZigEngageSingleSession.cs" />
      <Compile Include="Assets\ZigFu\Scripts\UserEngagers\ZigEngageSingleUser.cs" />
      <Compile Include="Assets\ZigFu\Scripts\UserEngagers\ZigEngageSplitScreen.cs" />
-     <Compile Include="Assets\ZigFu\Scripts\Viewers\Audio\AudioToEnergy.cs" />
-     <Compile Include="Assets\ZigFu\Scripts\Viewers\Audio\ZigKinectAudioViewer.cs" />
-     <Compile Include="Assets\ZigFu\Scripts\Viewers\Audio\ZigKinectAudioViewer3D.cs" />
-     <Compile Include="Assets\ZigFu\Scripts\Viewers\Audio\ZigKinectBeamAngleViewer.cs" />
-     <Compile Include="Assets\ZigFu\Scripts\Viewers\Audio\ZigKinectFullAudioViewer.cs" />
      <Compile Include="Assets\ZigFu\Scripts\Viewers\ZigDepthViewer.cs" />
      <Compile Include="Assets\ZigFu\Scripts\Viewers\ZigDepthmapToParticles.cs" />
      <Compile Include="Assets\ZigFu\Scripts\Viewers\ZigImageViewer.cs" />
@@ -70,6 +73,7 @@
      <Compile Include="Assets\ZigFu\Scripts\Viewers\ZigUsersRadar.cs" />
      <Compile Include="Assets\ZigFu\Scripts\Zig.cs" />
      <Compile Include="Assets\ZigFu\Scripts\_Internal\Matrix3.cs" />
+     <Compile Include="Assets\ZigFu\Scripts\_Internal\TestScript.cs" />
      <Compile Include="Assets\ZigFu\Scripts\_Internal\TimedBuffer.cs" />
      <Compile Include="Assets\ZigFu\Scripts\_Internal\kinectSpecific.cs" />
  <Reference Include="OpenNI.Net">

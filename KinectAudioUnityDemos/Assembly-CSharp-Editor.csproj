@@ -45,7 +45,9 @@
   </ItemGroup>
   <ItemGroup>
      <Compile Include="Assets\Editor\BuildScenes.cs" />
-     <Compile Include="Assets\Editor\ZigKinectAudioSource_Editor.cs" />
+     <Compile Include="Assets\Zig Audio and Speech\Editor\ZigKinectAudioSource_Editor.cs" />
+     <Compile Include="Assets\Zig Audio and Speech\Editor\ZigKinectSpeechRecognizer_Editor.cs" />
+     <Compile Include="Assets\Zig Audio and Speech\Editor\ZigSpeechGrammar_Editor.cs" />
  <Reference Include="OpenNI.Net">
  <HintPath>Assets\ZigFu\Scripts\_Internal\OpenNI.Net.dll</HintPath>
  </Reference>
