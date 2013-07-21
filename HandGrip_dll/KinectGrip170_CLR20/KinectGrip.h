@@ -17,7 +17,7 @@
 
 
 //// Interface for Unity ////
-extern "C" int EXPORT_API InitKinectInteraction();  // Should be called at Start()
+extern "C" int EXPORT_API InitKinectInteraction(int a_mode);  // Should be called at Start()
 
 extern "C" int EXPORT_API FinishKinectInteraction();  // Called when the application ends
 

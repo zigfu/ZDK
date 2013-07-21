@@ -19,16 +19,26 @@ using namespace std;
 INuiSensor            *m_pNuiSensor;
 
 INuiInteractionStream *m_nuiIStream;
+HANDLE m_hProcesss;		// KinectDataProc Thread Handle
+DWORD m_dwThreadID=0;
 
 int m_LHandStat = 0;
 int m_RHandStat = 0;
 
-class CIneractionClient:public INuiInteractionClient
+enum HANDGRIP_UPDATE_MODE
+{
+	FROM_UNITY,
+	THREAD,
+};
+
+HANDGRIP_UPDATE_MODE m_mode = HANDGRIP_UPDATE_MODE::FROM_UNITY;	
+
+class CInteractionClient:public INuiInteractionClient
 {
 public:
-	CIneractionClient()
+	CInteractionClient()
 	{;}
-	~CIneractionClient()
+	~CInteractionClient()
 	{;}
 
 	STDMETHOD(GetInteractionInfoAtLocation)(THIS_ DWORD skeletonTrackingId, NUI_HAND_TYPE handType, FLOAT x, FLOAT y, _Out_ NUI_INTERACTION_INFO *pInteractionInfo)
@@ -54,7 +64,7 @@ public:
 
 };
 
-CIneractionClient m_nuiIClient;
+CInteractionClient m_nuiIClient;
 //--------------------------------------------------------------------
 HANDLE m_hNextColorFrameEvent;
 HANDLE m_hNextDepthFrameEvent;
@@ -163,7 +173,7 @@ int ShowInteraction()
 	return 0;
 }
 
-/*
+
 DWORD WINAPI KinectDataThread(LPVOID pParam)
 {
 	HANDLE hEvents[5] = {m_hEvNuiProcessStop,m_hNextColorFrameEvent,
@@ -197,15 +207,21 @@ DWORD WINAPI KinectDataThread(LPVOID pParam)
 		}
 	}
 
+	m_nuiIStream->Disable();
 	CloseHandle(m_hEvNuiProcessStop);
 	m_hEvNuiProcessStop = NULL;
 	CloseHandle( m_hNextSkeletonEvent );
 	CloseHandle( m_hNextDepthFrameEvent );
 	CloseHandle( m_hNextColorFrameEvent );
 	CloseHandle( m_hNextInteractionEvent );
+	
+	
+	m_pNuiSensor->NuiShutdown();
+	m_pNuiSensor->Release();
+
 	return 0;
 }
-*/
+
 
 
 int KinectDataProc()
@@ -221,6 +237,7 @@ int KinectDataProc()
 	if (WAIT_OBJECT_0 == WaitForSingleObject(m_hEvNuiProcessStop, 0))
 	{
 		//break;
+		return -3;
 	}
 	// Process signal events
 	if (WAIT_OBJECT_0 == WaitForSingleObject(m_hNextColorFrameEvent, 0))
@@ -336,7 +353,7 @@ DWORD ConnectKinect()
 }
 
 // Previous main()
-int Init()
+int Init(HANDGRIP_UPDATE_MODE a_mode)
 {
 	cout << "test" << endl;
 	
@@ -362,8 +379,9 @@ int Init()
 		cout<<"Could not open Interation stream video"<<endl;
 		return hr;
 	}
-	
-	//HANDLE m_hProcesss = CreateThread(NULL, 0, KinectDataThread, 0, 0, 0);
+
+	if(a_mode == HANDGRIP_UPDATE_MODE::THREAD)
+		m_hProcesss = CreateThread(NULL, 0, KinectDataThread, 0, 0, &m_dwThreadID);
 	
 	return 0;
 }
@@ -371,29 +389,44 @@ int Init()
 
 int Finish()
 {	
-	// Must DISABLE the stream before Release the sensor
-	m_nuiIStream->Disable();
+	
+	if(m_mode != HANDGRIP_UPDATE_MODE::THREAD)
+	{
+		// Must DISABLE the stream before Release the sensor
+		m_nuiIStream->Disable();
 
-	CloseHandle(m_hEvNuiProcessStop);
-	m_hEvNuiProcessStop = NULL;
+		CloseHandle(m_hEvNuiProcessStop);
+		m_hEvNuiProcessStop = NULL;
 
-	CloseHandle( m_hNextInteractionEvent );
-	CloseHandle( m_hNextSkeletonEvent );
-	CloseHandle( m_hNextDepthFrameEvent );
-	CloseHandle( m_hNextColorFrameEvent );
+		CloseHandle( m_hNextInteractionEvent );
+		CloseHandle( m_hNextSkeletonEvent );
+		CloseHandle( m_hNextDepthFrameEvent );
+		CloseHandle( m_hNextColorFrameEvent );
+		
+		m_pNuiSensor->NuiShutdown();
+		m_pNuiSensor->Release();
+	}
 
-	m_pNuiSensor->NuiShutdown();
-	m_pNuiSensor->Release();
+	/*
+	if(m_mode == HANDGRIP_UPDATE_MODE::THREAD)
+	{
+		PDWORD pdwExitCode = 0;
+		GetExitCodeThread(m_hProcesss, pdwExitCode);
 
+		if( *pdwExitCode == STILL_ACTIVE)
+			TerminateThread(m_hProcesss, *pdwExitCode);
+	}
+	*/
 	return 0;
 }
 
 
 
 ///// Interfaces for Unity /////
-extern "C" int EXPORT_API InitKinectInteraction()
+extern "C" int EXPORT_API InitKinectInteraction(int a_mode)
 {
-	int ret = Init();
+	m_mode = static_cast<HANDGRIP_UPDATE_MODE>( a_mode );
+	int ret = Init(m_mode);
 
 	return ret;
 }
@@ -409,7 +442,18 @@ extern "C" int EXPORT_API FinishKinectInteraction()
 // Called from Unity Update()
 extern "C" int EXPORT_API UpdateKinectData()	
 {
-	return KinectDataProc();
+	switch (m_mode)
+	{
+	case FROM_UNITY:
+		return KinectDataProc();
+		break;
+	case THREAD:
+		return -1;
+		break;
+	default:
+		return -2;
+		break;
+	}
 }
 
 // Get Left Hand Grip State
