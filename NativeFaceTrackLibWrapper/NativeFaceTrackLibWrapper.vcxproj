@@ -56,7 +56,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>$(KINECTSDK10_DIR)\inc;$(FTSDK_DIR)inc;$(IncludePath)</IncludePath>
     <LibraryPath>$(FTSDK_DIR)Lib\x86;$(KINECTSDK10_DIR)\Lib\x86;$(LibraryPath)</LibraryPath>
-    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -71,7 +71,8 @@
       <AdditionalLibraryDirectories>C:\Program Files\Microsoft SDKs\Kinect\Developer Toolkit v1.7.0\Redist\amd64;C:\Program Files\Microsoft SDKs\Kinect\Developer Toolkit v1.7.0\Redist\x86</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy "$(TargetPath)" "$(SolutionDir)\..\ZigFaceTracking_Unity\" /s /i /y</Command>
+      <Command>xcopy "$(TargetPath)" "$(SolutionDir)\Output - Unity Plugins\" /s /i /y</Command>
+      <Message>Copies the built DLL to "Output - Unity Plugins" folder.</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
