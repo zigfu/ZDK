@@ -51,30 +51,11 @@ public class ZigKinectSpeechRecognizer_Editor : Editor
 
     #region Init
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-    SerializedObject _srObj;
-
-
-=======
->>>>>>> 7791ea624c1808128f05ae48a0f06f09524702cf
-=======
->>>>>>> 7791ea624c1808128f05ae48a0f06f09524702cf
     void OnEnable()
     {
         if (verbose) { Debug.Log(ClassName + " :: OnEnable"); }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-        _srObj = new SerializedObject(target);
-
-
-=======
->>>>>>> 7791ea624c1808128f05ae48a0f06f09524702cf
-=======
->>>>>>> 7791ea624c1808128f05ae48a0f06f09524702cf
         _target = (ZigKinectSpeechRecognizer)target;
-
 
         _target.StartedListening += _SR_StoppedListening;
         _target.StoppedListening += _SR_StartedListening;
@@ -130,16 +111,6 @@ public class ZigKinectSpeechRecognizer_Editor : Editor
 
     void UpdateGUI()
     {
-<<<<<<< HEAD
-<<<<<<< HEAD
-        _srObj.Update();
-
-        EditorGUIUtility.LookLikeInspector();
-
-=======
->>>>>>> 7791ea624c1808128f05ae48a0f06f09524702cf
-=======
->>>>>>> 7791ea624c1808128f05ae48a0f06f09524702cf
         if (!UnityEditorIsPlayingOrPaused) { _errorMessage_StartSpeechRecognition = null; }
 
         GUI_SmallSeparator();
@@ -171,14 +142,6 @@ public class ZigKinectSpeechRecognizer_Editor : Editor
         {
             GUI_SmallSeparator();
         }
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-        _srObj.ApplyModifiedProperties();
-=======
->>>>>>> 7791ea624c1808128f05ae48a0f06f09524702cf
-=======
->>>>>>> 7791ea624c1808128f05ae48a0f06f09524702cf
     }
 
 
