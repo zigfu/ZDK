@@ -1,3 +1,0 @@
-C:\Users\Randy\Documents\New Unity Project 1\obj\Debug\Assembly-CSharp-vs.csprojResolveAssemblyReference.cache
-C:\Users\Randy\Desktop\Zigfu\ZDK-Audio\KinectAudioUnityDemos\obj\Debug\Assembly-CSharp-vs.csprojResolveAssemblyReference.cache
-C:\Users\Randy\Documents\GitHub\ZDK\KinectAudioUnityDemos\obj\Debug\Assembly-CSharp-vs.csprojResolveAssemblyReference.cache
