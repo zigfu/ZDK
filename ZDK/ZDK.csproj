@@ -55,14 +55,35 @@
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <Compile Include="ZigInput.cs" />
-    <Compile Include="WebplayerReceiver.cs" />
-    <Compile Include="ZigInputKinectSDK.cs" />
-    <Compile Include="ZigInputOpenNI.cs" />
-    <Compile Include="ZigInputOpenNI2.cs" />
-    <Compile Include="ZigInputWebplayer.cs" />
-    <Compile Include="JSON.cs" />
-    <Compile Include="WebplayerLogger.cs" />
+    <Compile Include="Utility\NativeObjectWrapper.cs" />
+    <Compile Include="FaceTracking\ZigFaceTracker.cs" />
+    <Compile Include="FaceTracking\FTInterop\FTModel.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FaceTracking\FTInterop\FTResult.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FaceTracking\Utils.cs" />
+    <Compile Include="FaceTracking\FTInterop\FTFaceTracker.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FaceTracking\FTInterop\FTHelper.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FaceTracking\FTInterop\FTImage.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FaceTracking\EnumIndexableCollection.cs" />
+    <Compile Include="Utility\MathHelper.cs" />
+    <Compile Include="Utility\Singleton.cs" />
+    <Compile Include="ZigInput\ZigInput.cs" />
+    <Compile Include="Other\WebplayerReceiver.cs" />
+    <Compile Include="ZigInput\ZigInputKinectSDK.cs" />
+    <Compile Include="ZigInput\ZigInputOpenNI.cs" />
+    <Compile Include="ZigInput\ZigInputOpenNI2.cs" />
+    <Compile Include="ZigInput\ZigInputWebplayer.cs" />
+    <Compile Include="Other\JSON.cs" />
+    <Compile Include="Other\WebplayerLogger.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="OpenNI.Net, Version=1.5.2.23, Culture=neutral, PublicKeyToken=6b43d0c6cf74ee7f, processorArchitecture=x86">
@@ -70,11 +91,11 @@
       <HintPath>..\ZDKNative\OpenNI.Net.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine">
-      <HintPath>C:\Program Files (x86)\Unity\Editor\Data\Managed\UnityEngine.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Unity\Editor\Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="wm.png" />
+    <EmbeddedResource Include="Other\wm.png" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
@@ -93,4 +114,8 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup />
+  <PropertyGroup>
+    <PostBuildEvent>xcopy "$(TargetPath)" "$(SolutionDir)\Output - Unity Plugins\" /s /i /y</PostBuildEvent>
+  </PropertyGroup>
 </Project>

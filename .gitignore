@@ -2,9 +2,16 @@
 *.suo
 *.user
 *.opensdf
+*.DS_Store
+*.v11
+Debug
+Release
 ZDK/bin
 ZDK/obj
 
 ZDK.sdf
 WPF/UserRadar/obj/
 WPF/UserRadar/bin
+
+NativeFaceTrackLibWrapper/Debug
+NativeFaceTrackLibWrapper/Release
