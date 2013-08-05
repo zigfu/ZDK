@@ -1,10 +1,13 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 ﻿Build started 8/4/2013 4:56:37 PM.
 
 Build succeeded.
 
 Time Elapsed 00:00:00.07
 =======
+=======
+>>>>>>> 7791ea624c1808128f05ae48a0f06f09524702cf
 ﻿Build started 7/11/2013 11:51:00 PM.
      1>Project "C:\Users\Randy\Documents\GitHub\ZDK\ZigNativeKinectAudioSourceDll\ZigNativeKinectAudioSourceDll.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
@@ -58,4 +61,7 @@ Time Elapsed 00:00:00.07
 Build succeeded.
 
 Time Elapsed 00:00:03.47
+<<<<<<< HEAD
+>>>>>>> 7791ea624c1808128f05ae48a0f06f09524702cf
+=======
 >>>>>>> 7791ea624c1808128f05ae48a0f06f09524702cf
