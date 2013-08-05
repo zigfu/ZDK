@@ -4,20 +4,21 @@
 #include "mediaobj.h"
 #include "KinectAudioSpecs.h"
 
+
 // Summary:
 //		IMediaBuffer implementation for a statically allocated buffer.
-//		Intended to store Kinect audio data.
+//		 Intended to store Kinect audio data.
 //
 class StaticMediaBuffer : public IMediaBuffer
 {
 public:
 
-	StaticMediaBuffer::StaticMediaBuffer() : m_dataLength(0) {}
+	StaticMediaBuffer() : m_dataLength(0) {}
 
 	// IUnknown methods
-	inline STDMETHODIMP_(ULONG) StaticMediaBuffer::AddRef() { return 2; }
-	inline STDMETHODIMP_(ULONG) StaticMediaBuffer::Release() { return 1; }
-	inline STDMETHODIMP StaticMediaBuffer::QueryInterface(REFIID riid, void **ppv)
+	inline STDMETHODIMP_(ULONG) AddRef() { return 2; }
+	inline STDMETHODIMP_(ULONG) Release() { return 1; }
+	inline STDMETHODIMP QueryInterface(REFIID riid, void **ppv)
 	{
 		if (riid == IID_IUnknown)
 		{
@@ -38,21 +39,16 @@ public:
 	}
 
 	// IMediaBuffer methods
-	inline STDMETHODIMP StaticMediaBuffer::SetLength(DWORD length) {m_dataLength = length; return NOERROR;}
-	inline STDMETHODIMP StaticMediaBuffer::GetMaxLength(DWORD *pMaxLength) {*pMaxLength = sizeof(m_pData); return NOERROR;}
-	inline STDMETHODIMP StaticMediaBuffer::GetBufferAndLength(BYTE **ppBuffer, DWORD *pLength)
+	inline STDMETHODIMP SetLength(DWORD length) {m_dataLength = length; return NOERROR;}
+	inline STDMETHODIMP GetMaxLength(DWORD *pMaxLength) {*pMaxLength = sizeof(m_pData); return NOERROR;}
+	inline STDMETHODIMP GetBufferAndLength(BYTE **ppBuffer, DWORD *pLength)
 	{
-		if (ppBuffer)
-		{
-			*ppBuffer = m_pData;
-		}
-		if (pLength)
-		{
-			*pLength = m_dataLength;
-		}
+		if (ppBuffer)	{ *ppBuffer = m_pData; }
+		if (pLength)	{ *pLength = m_dataLength; }
+
 		return NOERROR;
 	}
-	inline void StaticMediaBuffer::Init(ULONG ulData)
+	inline void Init(ULONG ulData)
 	{
 		m_dataLength = ulData;
 	}

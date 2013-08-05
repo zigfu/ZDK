@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
 	<Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
 	<Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-	<ProductVersion>10.0.20506</ProductVersion>
+	<ProductVersion>9.0.21022</ProductVersion>
 	<SchemaVersion>2.0</SchemaVersion>
 	<ProjectGuid>{1877129C-99B3-03D6-7998-E463B873147A}</ProjectGuid>
 	<OutputType>Library</OutputType>
@@ -18,7 +18,7 @@
 	<DebugType>full</DebugType>
 	<Optimize>false</Optimize>
 	<OutputPath>Temp\bin\Debug\</OutputPath>
-	<DefineConstants>DEBUG;TRACE;UNITY_STANDALONE_WIN;ENABLE_MICROPHONE;ENABLE_IMAGEEFFECTS;ENABLE_WEBCAM;ENABLE_AUDIO_FMOD;UNITY_STANDALONE;ENABLE_NETWORK;ENABLE_MONO;ENABLE_PHYSICS;ENABLE_TERRAIN;ENABLE_CACHING;ENABLE_SUBSTANCE;ENABLE_GENERICS;ENABLE_CLOTH;ENABLE_MOVIES;ENABLE_AUDIO;ENABLE_WWW;ENABLE_SHADOWS;ENABLE_DUCK_TYPING;UNITY_4_1_3;UNITY_4_1;ENABLE_PROFILER;UNITY_EDITOR;UNITY_TEAM_LICENSE</DefineConstants>
+	<DefineConstants>DEBUG;TRACE;UNITY_STANDALONE_WIN;ENABLE_MICROPHONE;ENABLE_TEXTUREID_MAP;ENABLE_AUDIO_FMOD;UNITY_STANDALONE;ENABLE_MONO;ENABLE_TERRAIN;ENABLE_SUBSTANCE;ENABLE_GENERICS;ENABLE_MOVIES;ENABLE_WWW;ENABLE_IMAGEEFFECTS;ENABLE_WEBCAM;RENDER_SOFTWARE_CURSOR;ENABLE_NETWORK;ENABLE_PHYSICS;ENABLE_CACHING;ENABLE_CLOTH;ENABLE_SHADOWS;ENABLE_AUDIO;ENABLE_DUCK_TYPING;ENABLE_SINGLE_INSTANCE_BUILD_SETTING;UNITY_4_2_0;UNITY_4_2;ENABLE_PROFILER;UNITY_EDITOR;UNITY_EDITOR_WIN;UNITY_TEAM_LICENSE</DefineConstants>
 	<ErrorReport>prompt</ErrorReport>
 	<WarningLevel>4</WarningLevel>
 	<NoWarn>0169</NoWarn>
@@ -44,6 +44,14 @@
 	</Reference>
   </ItemGroup>
   <ItemGroup>
+     <Compile Include="Assets\Zig Audio and Speech\Demos\Speech Demo\MenuController.cs" />
+     <Compile Include="Assets\Zig Audio and Speech\Demos\Speech Demo\MenuSpeechInterface.cs" />
+     <Compile Include="Assets\Zig Audio and Speech\Viewers\AudioToEnergy.cs" />
+     <Compile Include="Assets\Zig Audio and Speech\Viewers\ZigKinectAudioViewer.cs" />
+     <Compile Include="Assets\Zig Audio and Speech\Viewers\ZigKinectAudioViewer3D.cs" />
+     <Compile Include="Assets\Zig Audio and Speech\Viewers\ZigKinectBeamAngleViewer.cs" />
+     <Compile Include="Assets\Zig Audio and Speech\Viewers\ZigKinectFullAudioViewer.cs" />
+     <Compile Include="Assets\Zig Audio and Speech\Viewers\ZigSpeechViewer.cs" />
      <Compile Include="Assets\ZigFu\Scripts\UISessionControls\ZigFader.cs" />
      <Compile Include="Assets\ZigFu\Scripts\UISessionControls\ZigFollowHandPoint.cs" />
      <Compile Include="Assets\ZigFu\Scripts\UISessionControls\ZigPushDetector.cs" />
@@ -58,11 +66,6 @@
      <Compile Include="Assets\ZigFu\Scripts\UserEngagers\ZigEngageSingleSession.cs" />
      <Compile Include="Assets\ZigFu\Scripts\UserEngagers\ZigEngageSingleUser.cs" />
      <Compile Include="Assets\ZigFu\Scripts\UserEngagers\ZigEngageSplitScreen.cs" />
-     <Compile Include="Assets\ZigFu\Scripts\Viewers\Audio\AudioToEnergy.cs" />
-     <Compile Include="Assets\ZigFu\Scripts\Viewers\Audio\ZigKinectAudioViewer.cs" />
-     <Compile Include="Assets\ZigFu\Scripts\Viewers\Audio\ZigKinectAudioViewer3D.cs" />
-     <Compile Include="Assets\ZigFu\Scripts\Viewers\Audio\ZigKinectBeamAngleViewer.cs" />
-     <Compile Include="Assets\ZigFu\Scripts\Viewers\Audio\ZigKinectFullAudioViewer.cs" />
      <Compile Include="Assets\ZigFu\Scripts\Viewers\ZigDepthViewer.cs" />
      <Compile Include="Assets\ZigFu\Scripts\Viewers\ZigDepthmapToParticles.cs" />
      <Compile Include="Assets\ZigFu\Scripts\Viewers\ZigImageViewer.cs" />
@@ -70,6 +73,7 @@
      <Compile Include="Assets\ZigFu\Scripts\Viewers\ZigUsersRadar.cs" />
      <Compile Include="Assets\ZigFu\Scripts\Zig.cs" />
      <Compile Include="Assets\ZigFu\Scripts\_Internal\Matrix3.cs" />
+     <Compile Include="Assets\ZigFu\Scripts\_Internal\TestScript.cs" />
      <Compile Include="Assets\ZigFu\Scripts\_Internal\TimedBuffer.cs" />
      <Compile Include="Assets\ZigFu\Scripts\_Internal\kinectSpecific.cs" />
  <Reference Include="OpenNI.Net">

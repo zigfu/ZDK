@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 
-namespace ZDK.Utility
+
+namespace Zigfu.Utility
 {
     // Summary:
     //      The following class will make any class that inherits from it a singleton MonoBehaviour automatically
@@ -31,6 +32,13 @@ namespace ZDK.Utility
                     DontDestroyOnLoad(_instance);
                 }
                 return _instance;
+            }
+        }
+
+        public static bool InstanceExists { 
+            get { 
+                return (_instance != null) 
+                    || (FindObjectOfType(typeof(T)) != null);
             }
         }
     }
