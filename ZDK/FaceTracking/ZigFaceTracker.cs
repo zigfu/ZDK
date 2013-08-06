@@ -6,7 +6,7 @@ using Zigfu.Utility;
 
 namespace Zigfu.FaceTracking
 {
-    public class ZigFaceTracker : Singleton<ZigFaceTracker>
+    public class ZigFaceTracker : MonoBehaviour
     {
         const String ClassName = "ZigFaceTracker";
 
@@ -48,6 +48,16 @@ namespace Zigfu.FaceTracking
 
 
         #region Init and Destroy
+
+        public static ZigFaceTracker Instance
+        {
+            get { return Singleton<ZigFaceTracker>.Instance; }
+        }
+        public static bool InstanceExists
+        {
+            get { return Singleton<ZigFaceTracker>.InstanceExists; }
+        }
+
 
         void Awake()
         {
