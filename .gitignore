@@ -1,7 +1,6 @@
 *.userprefs
 *.suo
 *.user
-*.meta
 
 ZDK/bin
 ZDK/obj
