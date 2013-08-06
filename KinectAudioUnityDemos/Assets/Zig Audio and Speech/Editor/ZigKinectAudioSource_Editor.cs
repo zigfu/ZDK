@@ -56,6 +56,7 @@ public class ZigKinectAudioSource_Editor : Editor
     int _oldManualBeamAngle;
     bool _oldAutomaticGainControlEnabled;
     bool _oldNoiseSuppression;
+    
 
     #region Init
 

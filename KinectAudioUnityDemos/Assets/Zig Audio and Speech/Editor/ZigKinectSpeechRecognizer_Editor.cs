@@ -51,11 +51,18 @@ public class ZigKinectSpeechRecognizer_Editor : Editor
 
     #region Init
 
+    SerializedObject _srObj;
+
+
     void OnEnable()
     {
         if (verbose) { Debug.Log(ClassName + " :: OnEnable"); }
 
+        _srObj = new SerializedObject(target);
+
+
         _target = (ZigKinectSpeechRecognizer)target;
+
 
         _target.StartedListening += _SR_StoppedListening;
         _target.StoppedListening += _SR_StartedListening;
@@ -111,6 +118,10 @@ public class ZigKinectSpeechRecognizer_Editor : Editor
 
     void UpdateGUI()
     {
+        _srObj.Update();
+
+        EditorGUIUtility.LookLikeInspector();
+
         if (!UnityEditorIsPlayingOrPaused) { _errorMessage_StartSpeechRecognition = null; }
 
         GUI_SmallSeparator();
@@ -142,6 +153,8 @@ public class ZigKinectSpeechRecognizer_Editor : Editor
         {
             GUI_SmallSeparator();
         }
+
+        _srObj.ApplyModifiedProperties();
     }
 
 
