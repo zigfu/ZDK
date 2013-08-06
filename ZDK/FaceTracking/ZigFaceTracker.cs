@@ -84,6 +84,11 @@ namespace Zigfu.FaceTracking
 
         #region Update and Track
 
+        void Update()
+        {
+            Verbose = _verbose;
+        }
+
         public void UpdateVideoFrame(IntPtr nuiVideoFramePtr)
         {
             ColorImage.CopyFrom(nuiVideoFramePtr);

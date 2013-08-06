@@ -63,11 +63,10 @@
     <Compile Include="FaceTracking\FTInterop\FTResult.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="FaceTracking\Utils.cs" />
     <Compile Include="FaceTracking\FTInterop\FTFaceTracker.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="FaceTracking\FTInterop\FTHelper.cs">
+    <Compile Include="FaceTracking\FTInterop\FTUtils.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="FaceTracking\FTInterop\FTImage.cs">
@@ -116,6 +115,7 @@
   </ItemGroup>
   <ItemGroup />
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(TargetPath)" "$(SolutionDir)\Output - Unity Plugins\" /s /i /y</PostBuildEvent>
+    <PostBuildEvent>xcopy "$(TargetPath)" "$(SolutionDir)\Output - Unity Plugins\" /s /i /y
+xcopy "$(TargetPath)" "$(SolutionDir)\..\ZigFaceTracking_Unity\Assets\ZigFu\Scripts\_Internal\" /s /i /y</PostBuildEvent>
   </PropertyGroup>
 </Project>

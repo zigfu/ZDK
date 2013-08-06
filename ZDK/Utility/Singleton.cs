@@ -26,7 +26,7 @@ namespace Zigfu.Utility
 
                         GameObject go = new GameObject();
                         DontDestroyOnLoad(go);
-                        go.name = typeof(T).ToString();
+                        go.name = GetNameFromType();
                         _instance = go.AddComponent<T>();
                     }
                     DontDestroyOnLoad(_instance);
@@ -40,6 +40,18 @@ namespace Zigfu.Utility
                 return (_instance != null) 
                     || (FindObjectOfType(typeof(T)) != null);
             }
+        }
+
+
+        static string GetNameFromType()
+        {
+            string name = typeof(T).ToString();
+            if (name.Contains("."))
+            {
+                int startIdx = name.LastIndexOf('.') + 1;
+                name = name.Substring(startIdx);
+            }
+            return name;
         }
     }
 }
