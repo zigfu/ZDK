@@ -6,7 +6,7 @@ using Zigfu.Utility;
 
 namespace Zigfu.KinectAudio
 {
-    public sealed partial class ZigKinectAudioSource : Singleton<ZigKinectAudioSource>
+    public sealed partial class ZigKinectAudioSource : MonoBehaviour
     {
 
         const String DLL_DIR = @"";

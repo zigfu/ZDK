@@ -12,7 +12,7 @@ using Zigfu.Utility;
 
 namespace Zigfu.Speech
 {
-    public sealed partial class ZigKinectSpeechRecognizer : Singleton<ZigKinectSpeechRecognizer>, IZigSpeechGrammarDelegate
+    public sealed partial class ZigKinectSpeechRecognizer : MonoBehaviour, IZigSpeechGrammarDelegate
     {
         const String ClassName = "ZigKinectSpeechRecognizer";
         const UInt32 ProcessSpeechInterval_MS = 16;
@@ -121,6 +121,16 @@ namespace Zigfu.Speech
 
 
         #region Init and Destroy
+
+        public static ZigKinectSpeechRecognizer Instance
+        {
+            get { return Singleton<ZigKinectSpeechRecognizer>.Instance; }
+        }
+        public static bool InstanceExists
+        {
+            get { return Singleton<ZigKinectSpeechRecognizer>.InstanceExists; }
+        }
+
 
         void Awake()
         {

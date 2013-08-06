@@ -22,11 +22,11 @@ namespace Zigfu.Utility
                     _instance = (T)FindObjectOfType(typeof(T));
                     if (_instance == null)
                     {
-                        print("Singleton :: Creating Singleton instance of type " + typeof(T).ToString());
+                        //print("Singleton :: Creating Singleton instance of type " + typeof(T).ToString());
 
                         GameObject go = new GameObject();
                         DontDestroyOnLoad(go);
-                        go.name = typeof(T).ToString();
+                        go.name = GetNameFromType();
                         _instance = go.AddComponent<T>();
                     }
                     DontDestroyOnLoad(_instance);
@@ -35,11 +35,25 @@ namespace Zigfu.Utility
             }
         }
 
-        public static bool InstanceExists { 
-            get { 
-                return (_instance != null) 
+        public static bool InstanceExists
+        {
+            get
+            {
+                return (_instance != null)
                     || (FindObjectOfType(typeof(T)) != null);
             }
+        }
+
+
+        static string GetNameFromType()
+        {
+            string name = typeof(T).ToString();
+            if (name.Contains("."))
+            {
+                int startIdx = name.LastIndexOf('.') + 1;
+                name = name.Substring(startIdx);
+            }
+            return name;
         }
     }
 }

@@ -25,7 +25,7 @@ namespace Zigfu.KinectAudio
     //      Partial class definition also exists in ZigKinectAudioSource_CaptureAudio.cs.
     //      - It contains functionality for capturing Kinect Audio Data and writing it to a Stream
     // 
-    public sealed partial class ZigKinectAudioSource : Singleton<ZigKinectAudioSource>
+    public sealed partial class ZigKinectAudioSource : MonoBehaviour
     {
         const String ClassName = "ZigKinectAudioSource";
 
@@ -130,6 +130,16 @@ namespace Zigfu.KinectAudio
 
 
         #region Init and Destroy
+
+        public static ZigKinectAudioSource Instance
+        {
+            get { return Singleton<ZigKinectAudioSource>.Instance; }
+        }
+        public static bool InstanceExists
+        {
+            get { return Singleton<ZigKinectAudioSource>.InstanceExists; }
+        }
+
 
         void Awake()
         {

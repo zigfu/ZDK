@@ -5,24 +5,16 @@
         object m_Handle = new object();
         System.Threading.Thread m_Thread = null;
 
+
         bool m_IsDone = false;
-        public bool IsDone
-        {
-            get
-            {
+        public bool IsDone {
+            get {
                 bool tmp;
-                lock (m_Handle)
-                {
-                    tmp = m_IsDone;
-                }
+                lock (m_Handle) { tmp = m_IsDone; }
                 return tmp;
             }
-            set
-            {
-                lock (m_Handle)
-                {
-                    m_IsDone = value;
-                }
+            set {
+                lock (m_Handle) { m_IsDone = value; }
             }
         }
 
@@ -36,23 +28,22 @@
             m_Thread.Abort();
         }
 
-        protected virtual void ThreadFunction() { }
-
-        protected virtual void OnFinished() { }
-
+        
         public virtual bool Update()
         {
-            if (IsDone)
-            {
-                OnFinished();
-                return true;
-            }
-            return false;
+            if (IsDone) { OnFinished(); }
+            return IsDone;
         }
         private void Run()
         {
             ThreadFunction();
             IsDone = true;
         }
+
+
+        // --- Virtual ---
+
+        protected virtual void ThreadFunction() { }
+        protected virtual void OnFinished() { }
     }
 }

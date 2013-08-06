@@ -17,7 +17,7 @@ namespace Zigfu.KinectAudio
     //      Main class definition exists in ZigKinectAudioSource.cs.
     //      Partial class definition also exists in ZigKinectAudioSource_ImportedFunctions.cs.
     //
-    public sealed partial class ZigKinectAudioSource : Singleton<ZigKinectAudioSource>
+    public sealed partial class ZigKinectAudioSource : MonoBehaviour
     {
         public const UInt32 DefaultReadStaleThreshold_Milliseconds = 500;
         const UInt32 CaptureAudioInterval_MS = 30;

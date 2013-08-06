@@ -6,7 +6,7 @@ using Zigfu.Utility;
 
 namespace Zigfu.Speech
 {
-    public sealed partial class ZigKinectSpeechRecognizer : Singleton<ZigKinectSpeechRecognizer>, IZigSpeechGrammarDelegate
+    public sealed partial class ZigKinectSpeechRecognizer : MonoBehaviour, IZigSpeechGrammarDelegate
     {
 
         const String DLL_DIR = @"";
