@@ -1,6 +1,8 @@
 *.userprefs
 *.suo
 *.user
+*.opensdf
+*.DS_Store
 
 ZDK/bin
 ZDK/obj
