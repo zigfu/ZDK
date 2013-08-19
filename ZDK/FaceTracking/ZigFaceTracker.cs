@@ -1,14 +1,20 @@
-﻿using UnityEngine;
-using System;
-using System.Runtime.InteropServices;
-using Zigfu.Utility;
-
-
-namespace Zigfu.FaceTracking
+﻿namespace Zigfu.FaceTracking
 {
+    using UnityEngine;
+    using System;
+    using System.Globalization;
+    using System.Runtime.InteropServices;
+    using Zigfu.Utility;
+
+
     public class ZigFaceTracker : MonoBehaviour
     {
         const String ClassName = "ZigFaceTracker";
+
+        const float NominalFocalLengthInPixels = 285.63f;
+
+        // A constant zoom factor is used for now, since Windows Kinect does not support different zoom levels.
+        internal const float DefaultZoomFactor = 1.0f;
 
         public const FaceTrackingImageFormat VideoFormat = FaceTrackingImageFormat.FTIMAGEFORMAT_UINT8_B8G8R8X8;
         public const FaceTrackingImageFormat DepthFormat = FaceTrackingImageFormat.FTIMAGEFORMAT_UINT16_D13P3;
@@ -18,7 +24,7 @@ namespace Zigfu.FaceTracking
         public ZigFaceTransform FaceTransformMirrored { get; private set; }
 
         public bool TrackSucceeded { 
-            get { return (Result != null && Result.Succeeded); }
+            get { return (_frame.TrackSuccessful); }
         }
 
         [SerializeField]
@@ -37,14 +43,47 @@ namespace Zigfu.FaceTracking
         }
 
 
-        public FTFaceTracker Tracker { get; private set; }
-        public FTResult Result { get; private set; }
-
         public FTImage ColorImage { get; private set; }
         public FTImage DepthImage { get; private set; }
 
-        public CameraConfig VideoCamConfig { get; private set; }
-        public CameraConfig DepthCamConfig { get; private set; }
+        public CameraConfig ColorCameraConfig { get; private set; }
+        public CameraConfig DepthCameraConfig { get; private set; }
+
+
+        FTFaceTracker _faceTrackerInteropPtr;
+        internal FTFaceTracker FaceTrackerPtr
+        {
+            get
+            {
+                return _faceTrackerInteropPtr;
+            }
+        }
+
+        ZigFaceTrackFrame _frame;
+        public ZigFaceTrackFrame FaceTrackFrame
+        {
+            get
+            {
+                return _frame;
+            }
+        }
+
+        ZigFaceModel _faceModel;
+        internal ZigFaceModel FaceModel
+        {
+            get
+            {
+                this.CheckPtrAndThrow();
+                if (this._faceModel == null)
+                {
+                    FTModel faceTrackModelPtr;
+                    faceTrackModelPtr = this._faceTrackerInteropPtr.GetFaceModel();
+                    this._faceModel = new ZigFaceModel(this, faceTrackModelPtr);
+                }
+
+                return this._faceModel;
+            }
+        }
 
 
         #region Init and Destroy
@@ -77,16 +116,24 @@ namespace Zigfu.FaceTracking
         {
             LogStatus("Initialize");
 
-            VideoCamConfig = new CameraConfig((uint)zigVideo.xres, (uint)zigVideo.yres, 0, VideoFormat);
-            DepthCamConfig = new CameraConfig((uint)zigDepth.xres, (uint)zigDepth.yres, 0, DepthFormat);
+            ColorCameraConfig = new CameraConfig((uint)zigVideo.xres, (uint)zigVideo.yres, NominalFocalLengthInPixels, VideoFormat);
+            DepthCameraConfig = new CameraConfig((uint)zigDepth.xres, (uint)zigDepth.yres, NominalFocalLengthInPixels, DepthFormat);
 
-            Tracker = new FTFaceTracker();
-            Tracker.Initialize(VideoCamConfig, DepthCamConfig, IntPtr.Zero, null);
+            _faceTrackerInteropPtr = new FTFaceTracker();
+            _faceTrackerInteropPtr.Initialize(ColorCameraConfig, DepthCameraConfig, IntPtr.Zero, null);
 
-            ColorImage = new FTImage(VideoCamConfig, colorImagePtr);
-            DepthImage = new FTImage(DepthCamConfig, depthImagePtr);
+            try
+            {
+                this._frame = this.CreateResult();
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException(
+                    string.Format(CultureInfo.CurrentCulture, "Failed to create face tracking result.", e));
+            }
 
-            Result = Tracker.CreateFTResult();
+            ColorImage = new FTImage(ColorCameraConfig, colorImagePtr);
+            DepthImage = new FTImage(DepthCameraConfig, depthImagePtr);
         }
 
         #endregion
@@ -108,14 +155,16 @@ namespace Zigfu.FaceTracking
             DepthImage.CopyFrom(nuiDepthFramePtr);
         }
 
-        public void Track()
+        public ZigFaceTrackFrame Track()
         {
             var sensorData = new SensorData(ColorImage, DepthImage, 1.0f, Point.Empty);
             FaceTrackingSensorData ftSensorData = sensorData.FaceTrackingSensorData;
 
             bool oldTrackSucceeded = TrackSucceeded;
-            if (oldTrackSucceeded)  { Tracker.ContinueTracking(ref ftSensorData, Result); }
-            else                    { Tracker.StartTracking(ref ftSensorData, Result); }
+            if (oldTrackSucceeded) 
+                { _faceTrackerInteropPtr.ContinueTracking(ref ftSensorData, this._frame.ResultPtr); }
+            else 
+                { _faceTrackerInteropPtr.StartTracking(ref ftSensorData, this._frame.ResultPtr); }
 
             if (TrackSucceeded != oldTrackSucceeded)
             {
@@ -124,6 +173,8 @@ namespace Zigfu.FaceTracking
             }
 
             UpdateFaceTransform();
+
+            return _frame;
         }
 
         void OnFaceDetected()
@@ -145,7 +196,7 @@ namespace Zigfu.FaceTracking
             Vector3DF rotationXYZ = new Vector3DF();
             Vector3DF translationXYZ = new Vector3DF();
 
-            Result.Get3DPose(out scale, out rotationXYZ, out translationXYZ);
+            this._frame.ResultPtr.Get3DPose(out scale, out rotationXYZ, out translationXYZ);
 
             newT.SetPosition(translationXYZ);
             newT.position.z *= -1;
@@ -175,31 +226,37 @@ namespace Zigfu.FaceTracking
         #endregion
 
 
-        #region Helper
-
         /// <summary>
-        /// Returns Animation Units (AUs) coefficients. These coefficients represent deformations 
-        /// of the 3D mask caused by the moving parts of the face (mouth, eyebrows, etc). Use the 
-        /// AnimationUnit enum to index these co-efficients
+        /// Creates a frame object instance. Can be used for caching of the face tracking
+        /// frame. FaceTrackFrame should be disposed after use.
         /// </summary>
         /// <returns>
-        /// The animation unit coefficients.
+        /// newly created frame object
         /// </returns>
-        public EnumIndexableCollection<AnimationUnit, float> GetAnimationUnitCoefficients()
+        internal ZigFaceTrackFrame CreateResult()
         {
-            if (!TrackSucceeded) { return null; }
+            FTResult faceTrackResultPtr;
+            ZigFaceTrackFrame faceTrackFrame = null;
 
-            IntPtr animUnitCoeffsPtr;
-            uint pointsCount;
-            Result.GetAUCoefficients(out animUnitCoeffsPtr, out pointsCount);
-            float[] animUnitCoeffs = null;
-            if (pointsCount > 0)
+            this.CheckPtrAndThrow();
+            faceTrackResultPtr = this._faceTrackerInteropPtr.CreateFTResult();
+            if (faceTrackResultPtr != null)
             {
-                animUnitCoeffs = new float[pointsCount];
-                Marshal.Copy(animUnitCoeffsPtr, animUnitCoeffs, 0, animUnitCoeffs.Length);
+                faceTrackFrame = new ZigFaceTrackFrame(faceTrackResultPtr, this);
             }
 
-            return new EnumIndexableCollection<AnimationUnit, float>(animUnitCoeffs);
+            return faceTrackFrame;
+        }
+
+
+        #region Helper
+
+        private void CheckPtrAndThrow()
+        {
+            if (this._faceTrackerInteropPtr == null)
+            {
+                throw new InvalidOperationException("Native face tracker pointer in invalid state.");
+            }
         }
 
         public static void PrintAnimCoefs(EnumIndexableCollection<AnimationUnit, float> animCoefs)

@@ -55,6 +55,8 @@
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
+    <Compile Include="FaceTracking\ZigFaceTrackFrame.cs" />
+    <Compile Include="FaceTracking\ZigFaceModel.cs" />
     <Compile Include="Utility\NativeObjectWrapper.cs" />
     <Compile Include="FaceTracking\ZigFaceTracker.cs" />
     <Compile Include="FaceTracking\FTInterop\FTModel.cs">
@@ -89,6 +91,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\ZDKNative\OpenNI.Net.dll</HintPath>
     </Reference>
+    <Reference Include="System" />
     <Reference Include="UnityEngine">
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Unity\Editor\Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
