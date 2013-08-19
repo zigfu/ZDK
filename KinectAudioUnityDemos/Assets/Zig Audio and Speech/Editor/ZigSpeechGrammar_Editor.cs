@@ -36,10 +36,7 @@ public class ZigSpeechGrammar_Editor : Editor
 
     const string CollapseAllButton_Text     = "-";
     const string ExpandAllButton_Text       = "+";
-
     const string DeleteEntry_Text           = "x";
-    const string NewSynonymPlaceholder_Text = "    <new>";
-    const string NewPhrasePlaceholder_Text  = "<NEW>";
 
     const string NewPhraseButton_Text       = "New Phrase";
     const string HelpButtonHidden_Text      = "Help";
@@ -110,7 +107,7 @@ public class ZigSpeechGrammar_Editor : Editor
 
     void AddPhrase(String semanticTag)
     {
-        Phrase newPhrase = Phrase.CreatePhrase(semanticTag, NewSynonymPlaceholder_Text);
+        Phrase newPhrase = Phrase.CreatePhrase(semanticTag, Phrase.NewSynonymPlaceholderText);
         if (!newPhrase) { return; }
 
         int newPhraseIndex = GetPhraseCount();
@@ -532,7 +529,7 @@ public class ZigSpeechGrammar_Editor : Editor
         return wasPressed;
     }
 
-    // The bottom-most synonym listed for each phrase will always be NewSynonymPlaceholder_Text.
+    // The bottom-most synonym listed for each phrase will always be Phrase.NewSynonymPlaceholderText.
     //  When the user types into that synonym's TextField, a new Synonym is automatically added beneath it.
     void EnsurePlaceholderSynonymExists(int phraseIndex)
     {
@@ -540,9 +537,9 @@ public class ZigSpeechGrammar_Editor : Editor
         int synonymCount = GetSynonymCount(p);
 
         String bottomSynonym = GetSynonym(p, synonymCount - 1);
-        if (bottomSynonym != NewSynonymPlaceholder_Text)
+        if (bottomSynonym != Phrase.NewSynonymPlaceholderText)
         {
-            AddSynonym(p, NewSynonymPlaceholder_Text);
+            AddSynonym(p, Phrase.NewSynonymPlaceholderText);
         }
     }
 
@@ -600,7 +597,7 @@ public class ZigSpeechGrammar_Editor : Editor
             wasPressed = GUILayout.Button(toolTip, style, GUILayout.Width(size.x));
             if (wasPressed)
             {
-                AddPhrase(NewPhrasePlaceholder_Text);
+                AddPhrase(Phrase.NewPhrasePlaceholderText);
 
                 // Ensure the new Phrase Foldout will appear in Expanded state
                 int indexOfNewPhrase = GetPhraseCount() - 1;

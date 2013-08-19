@@ -277,18 +277,35 @@ namespace Zigfu.Speech
 
         void PurgeAllPlaceholderSynonyms()
         {
-            foreach (Phrase phrase in _phrases)
+            for (int i = _phrases.Count - 1; i >= 0; i--)
             {
-                if (phrase == null) { continue; }
+                Phrase phrase = _phrases[i];
+                if (phrase == null)
+                { 
+                    _phrases.RemoveAt(i); 
+                    continue; 
+                }
+
 
                 List<String> synonyms = phrase.Synonyms;
-                if (synonyms == null || synonyms.Count <= 0) { continue; }
 
-                int lastIdx = synonyms.Count - 1;
-                String lastSynonym = synonyms[lastIdx];
-                if (!SpeechGrammarValidator.StringContainsLettersAndWhitespaceOnly(lastSynonym))
+                for (int j = synonyms.Count - 1; j >= 0; j--)
                 {
-                    synonyms.RemoveAt(lastIdx);
+                    String syn = synonyms[j];
+                    if (
+                        syn == null 
+                        || syn == String.Empty 
+                        || syn == Phrase.NewSynonymPlaceholderText)
+                    {
+                        synonyms.RemoveAt(j);
+                        continue;
+                    }
+                }
+
+                if (synonyms.Count == 0)
+                {
+                    _phrases.RemoveAt(i);
+                    continue;
                 }
             }
         }
@@ -301,7 +318,7 @@ namespace Zigfu.Speech
             }
             catch (Exception e)
             {
-                Debug.LogException(e);
+                Debug.LogError("Invalid SpeechGrammar.\n" + e.Message);
                 return false;
             }
             return true;

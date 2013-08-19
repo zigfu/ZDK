@@ -66,7 +66,7 @@ namespace Zigfu.Speech
                 { throw new NullReferenceException(grammarTextPrefix + " one or more Phrases contains a null SemanticTag."); }
             if (semanticTag == String.Empty)
                 { throw new Exception(grammarTextPrefix + " one or more Phrases has an empty SemanticTag (equal to String.Empty). Every Phrase must be assigned a unique, non-empty SemanticTag."); }
-            if (PhraseTagAppearsMoreThanOnceInSpeechGrammar(semanticTag, spGrammar))
+            if (SemanticTagAppearsMoreThanOnceInSpeechGrammar(semanticTag, spGrammar))
                 { throw new Exception(grammarTextPrefix + tagTextPrefix + " appears more than once.  Every Phrase must have its own unique SemanticTag."); }
         }
 
@@ -106,7 +106,7 @@ namespace Zigfu.Speech
         }
 
 
-        public static bool PhraseTagAppearsMoreThanOnceInSpeechGrammar(String phraseTag, ZigSpeechGrammar speechGrammar)
+        public static bool SemanticTagAppearsMoreThanOnceInSpeechGrammar(String phraseTag, ZigSpeechGrammar speechGrammar)
         {
             int matchCount = 0;
             foreach (Phrase phrase in speechGrammar.Phrases)

@@ -7,6 +7,10 @@ namespace Zigfu.Speech
 {
     public class Phrase : ScriptableObject
     {
+        public const string NewSynonymPlaceholderText = "    <new>";
+        public const string NewPhrasePlaceholderText  = "<NEW>";
+
+
         [SerializeField]
         String _semanticTag = String.Empty;
         public String SemanticTag { get { return _semanticTag; } set { _semanticTag = value; } }

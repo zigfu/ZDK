@@ -31,25 +31,7 @@ namespace Zigfu.Speech
 
         public const DialectEnum DefaultDialect = DialectEnum.English_United_States;
 
-        // AllDialects
-        static List<DialectEnum> _allDialects = new List<DialectEnum>
-        { 
-            DialectEnum.English_United_States,
-            DialectEnum.English_Great_Britain, 
-            DialectEnum.English_Ireland, 
-            DialectEnum.English_Australia, 
-            DialectEnum.English_New_Zealand, 
-            DialectEnum.English_Canada, 
-
-            DialectEnum.French_France, 
-            DialectEnum.French_Canada, 
-            DialectEnum.German_Germany, 
-            DialectEnum.Italian_Italy, 
-            DialectEnum.Japanese_Japan, 
-            DialectEnum.Spanish_Spain, 
-            DialectEnum.Spanish_Mexico
-        };
-        static public List<DialectEnum> AllDialects { get { return _allDialects; } }
+        static public DialectEnum[] AllDialects { get { return Enum.GetValues(typeof(DialectEnum)) as DialectEnum[]; } }
 
         // LanguagePackForDialect
         static Dictionary<DialectEnum, LanguagePack> _languagePackForDialect = new Dictionary<DialectEnum, LanguagePack>()
@@ -91,7 +73,7 @@ namespace Zigfu.Speech
         static public bool TryGetDialectForGrxmlLangName(string grxmlLangName, out DialectEnum dialect)
         {
             var temp =
-                from d in _allDialects
+                from d in AllDialects
                 where LanguagePackForDialect(d).GrxmlLangName == grxmlLangName
                 select d;
             dialect = temp.SingleOrDefault();
