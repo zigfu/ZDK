@@ -49,8 +49,8 @@
      <Compile Include="Assets\FaceTracking\Demos\Expression Tracking\MorphableFace.cs" />
      <Compile Include="Assets\FaceTracking\Demos\Expression Tracking\MorphableFace_GUI.cs" />
      <Compile Include="Assets\FaceTracking\Demos\Expression Tracking\MorphableFace_NUI.cs" />
-     <Compile Include="Assets\FaceTracking\Demos\FaceMask\MaskedImageViewer.cs" />
-     <Compile Include="Assets\FaceTracking\Demos\FaceMask\TexturedFaceMesh.cs" />
+     <Compile Include="Assets\FaceTracking\Demos\Face Mask\MaskedImageViewer.cs" />
+     <Compile Include="Assets\FaceTracking\Demos\Face Mask\TexturedFaceMesh.cs" />
      <Compile Include="Assets\FaceTracking\Demos\Head Tracked Camera\HeadTrackedCamera.cs" />
      <Compile Include="Assets\ZigFu\Scripts\UISessionControls\ZigFader.cs" />
      <Compile Include="Assets\ZigFu\Scripts\UISessionControls\ZigFollowHandPoint.cs" />
