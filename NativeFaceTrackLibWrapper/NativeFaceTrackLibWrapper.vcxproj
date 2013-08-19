@@ -72,7 +72,7 @@
     </Link>
     <PostBuildEvent>
       <Command>xcopy "$(TargetPath)" "$(SolutionDir)\Output - Unity Plugins\" /s /i /y
-xcopy "$(TargetPath)" "$(SolutionDir)\..\ZigFaceTracking_Unity\" /s /i /y</Command>
+xcopy "$(TargetPath)" "$(SolutionDir)\ZigFaceTracking_Unity\" /s /i /y</Command>
       <Message>Copies the built DLL to "Output - Unity Plugins" folder.</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -94,7 +94,7 @@ xcopy "$(TargetPath)" "$(SolutionDir)\..\ZigFaceTracking_Unity\" /s /i /y</Comma
     </Link>
     <PostBuildEvent>
       <Command>xcopy "$(TargetPath)" "$(SolutionDir)\Output - Unity Plugins\" /s /i /y
-xcopy "$(TargetPath)" "$(SolutionDir)\..\ZigFaceTracking_Unity\" /s /i /y</Command>
+xcopy "$(TargetPath)" "$(SolutionDir)\ZigFaceTracking_Unity\" /s /i /y</Command>
       <Message>Copies the built DLL to "Output - Unity Plugins" folder.</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>

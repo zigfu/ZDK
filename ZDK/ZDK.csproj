@@ -119,6 +119,6 @@
   <ItemGroup />
   <PropertyGroup>
     <PostBuildEvent>xcopy "$(TargetPath)" "$(SolutionDir)\Output - Unity Plugins\" /s /i /y
-xcopy "$(TargetPath)" "$(SolutionDir)\..\ZigFaceTracking_Unity\Assets\ZigFu\Scripts\_Internal\" /s /i /y</PostBuildEvent>
+xcopy "$(TargetPath)" "$(SolutionDir)\ZigFaceTracking_Unity\Assets\ZigFu\Scripts\_Internal\" /s /i /y</PostBuildEvent>
   </PropertyGroup>
 </Project>
