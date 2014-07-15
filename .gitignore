@@ -1,0 +1,16 @@
+*.userprefs
+*.suo
+*.user
+*.opensdf
+*.DS_Store
+
+ZDK/bin
+ZDK/obj
+ZDK.sdf
+ZDK.v11
+WPF/UserRadar/obj/
+WPF/UserRadar/bin
+Debug
+Release
+ZigNativeKinectAudioSourceDll/Debug
+ZigNativeKinectAudioSourceDll/Release
