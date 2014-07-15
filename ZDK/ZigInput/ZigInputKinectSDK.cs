@@ -4,6 +4,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
+using Zigfu.FaceTracking;
+
 
 /*
 //-----------------------------------------------------------------------------
@@ -115,6 +117,7 @@ struct NuiContext
     public IntPtr DepthHandle;
     public IntPtr ImageHandle;
 }
+
 
 public class NuiWrapper
 {
@@ -744,6 +747,7 @@ public class ZigInputKinectSDK : IZigInputReader
     bool SDKOrientations;
     bool useSmoothing = false;
     public short[] registrationBuffer;
+
     //-------------------------------------------------------------------------
     // IZigInputReader interface
     //-------------------------------------------------------------------------
@@ -763,6 +767,7 @@ public class ZigInputKinectSDK : IZigInputReader
 
     public void Init(ZigInputSettings settings)
     {
+        FaceTrackingEnabled = settings.KinectSDKSpecific.EnableFaceTracking;
         UpdateDepth = settings.UpdateDepth;
         UpdateImage = settings.UpdateImage;
         UpdateLabelMap = settings.UpdateLabelMap;
@@ -802,6 +807,12 @@ public class ZigInputKinectSDK : IZigInputReader
             //hr = NuiWrapper.NuiImageStreamOpen(NuiWrapper.NuiImageType.DepthAndPlayerIndex, NuiWrapper.NuiImageResolution.Res320x240, 0, 2, IntPtr.Zero, out context.DepthHandle);
             flags = settings.KinectSDKSpecific.NearMode ? (uint)NuiWrapper.NuiImageFlag.NUI_IMAGE_STREAM_FLAG_ENABLE_NEAR_MODE : 0;
             hr = NuiWrapper.NuiImageStreamOpen(NuiWrapper.NuiImageType.DepthAndPlayerIndex, NuiWrapper.NuiImageResolution.Res320x240, flags, 2, throwawayEvent, out context.DepthHandle);
+            if( hr == 2197880847)
+            {
+                Debug.LogWarning("Near Mode is not support on your hardware, disabling");
+                settings.KinectSDKSpecific.NearMode = false;
+                hr = NuiWrapper.NuiImageStreamOpen(NuiWrapper.NuiImageType.DepthAndPlayerIndex, NuiWrapper.NuiImageResolution.Res320x240, 0, 2, throwawayEvent, out context.DepthHandle);
+            }
             if (0 != hr)
             {
                 NuiWrapper.NuiShutdown(); // just in case
@@ -842,6 +853,12 @@ public class ZigInputKinectSDK : IZigInputReader
         LabelMap = new ZigLabelMap(320, 240);
 
         registrationBuffer = new short[320 * 240];
+
+
+        if(FaceTrackingEnabled)
+        {
+            ZigFaceTracker.Instance.Initialize(Image, Depth, IntPtr.Zero, IntPtr.Zero); 
+        }
     }
 
     NuiWrapper.NuiImageResolution lastResolution;
@@ -859,9 +876,11 @@ public class ZigInputKinectSDK : IZigInputReader
             IntPtr pImageFrame;
             if (0 == NuiWrapper.NuiImageStreamGetNextFrame(context.ImageHandle, 0, out pImageFrame))
             {
+                if (FaceTrackingEnabled) { ZigFaceTracker.Instance.UpdateVideoFrame(pImageFrame); }
+
                 imageFrame = (NuiWrapper.NuiImageFrame)Marshal.PtrToStructure(pImageFrame, typeof(NuiWrapper.NuiImageFrame));
                 NuiWrapper.INuiFrameTexture imageTexture = new NuiWrapper.INuiFrameTexture(imageFrame.FrameTexture);
-
+  
                 NuiWrapper.NuiLockedRect rect = imageTexture.LockRect();
                 NuiWrapper.ColorBuffer colors = (NuiWrapper.ColorBuffer)Marshal.PtrToStructure(rect.ActualDataFinally, typeof(NuiWrapper.ColorBuffer));
                 for (int i = 0; i < Image.data.Length; i++)
@@ -885,6 +904,7 @@ public class ZigInputKinectSDK : IZigInputReader
             IntPtr pDepthFrame;
             if (0 == NuiWrapper.NuiImageStreamGetNextFrame(context.DepthHandle, 0, out pDepthFrame))
             {
+                if (FaceTrackingEnabled) { ZigFaceTracker.Instance.UpdateDepthFrame(pDepthFrame); }
 
                 // deal with deref'ing/marshalling
                 depthFrame = (NuiWrapper.NuiImageFrame)Marshal.PtrToStructure(pDepthFrame, typeof(NuiWrapper.NuiImageFrame));
@@ -943,6 +963,8 @@ public class ZigInputKinectSDK : IZigInputReader
                 NuiWrapper.NuiImageStreamReleaseFrame(context.DepthHandle, pDepthFrame);
             }
         }
+
+        if (FaceTrackingEnabled) { ZigFaceTracker.Instance.Track(); }
     }
 
     public void Shutdown()
@@ -979,6 +1001,8 @@ public class ZigInputKinectSDK : IZigInputReader
     public bool UpdateLabelMap { get; set; }
 
     public bool AlignDepthToRGB { get; set; } //TODO: support
+
+    public bool FaceTrackingEnabled { get; set; } 
 
     public Vector3 ConvertWorldToImageSpace(Vector3 worldPosition)
     {

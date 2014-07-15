@@ -55,10 +55,20 @@
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
+    <Compile Include="FaceTracking\EnumIndexableCollection.cs" />
+    <Compile Include="FaceTracking\FTInterop\FTFaceTracker.cs" />
+    <Compile Include="FaceTracking\FTInterop\FTImage.cs" />
+    <Compile Include="FaceTracking\FTInterop\FTModel.cs" />
+    <Compile Include="FaceTracking\FTInterop\FTResult.cs" />
+    <Compile Include="FaceTracking\FTInterop\FTUtils.cs" />
+    <Compile Include="FaceTracking\ZigFaceModel.cs" />
+    <Compile Include="FaceTracking\ZigFaceTracker.cs" />
+    <Compile Include="FaceTracking\ZigFaceTrackFrame.cs" />
     <Compile Include="Speech Recognition\LanguagePack.cs" />
     <Compile Include="Speech Recognition\SpeechGrammarValidator.cs" />
     <Compile Include="Speech Recognition\ZigKinectSpeechRecognizer_ImportedFunctions.cs" />
     <Compile Include="Utility\MathHelper.cs" />
+    <Compile Include="Utility\NativeObjectWrapper.cs" />
     <Compile Include="Utility\Singleton.cs" />
     <Compile Include="Utility\ThreadedJob.cs" />
     <Compile Include="ZigInput\ZigInput.cs" />

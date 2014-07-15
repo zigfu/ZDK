@@ -248,6 +248,7 @@ public class ZigSettingsKinectSDK
     public bool SeatedMode = false;
     public bool NearMode = false;
     public bool TrackSkeletonInNearMode = false;
+    public bool EnableFaceTracking = false;
     public KinectSDKSmoothingParameters SmoothingParameters = new KinectSDKSmoothingParameters();    
 }
 
@@ -273,19 +274,18 @@ public class ZigInput : MonoBehaviour {
 	//-------------------------------------------------------------------------
 	// Watermark stuff
 	//-------------------------------------------------------------------------
-
+	
 	#if WATERMARK_OMERCY
 	
 	Texture2D watermarkTexture;
 	
 	Texture2D LoadTextureFromResource(string name) {
 		// open resource stream
-        Stream s = this.GetType().Assembly.GetManifestResourceStream(name);
-        if (null == s)
-        {
-            return null;
-        }
-
+		Stream s = this.GetType().Assembly.GetManifestResourceStream(name);
+		if (null == s) {
+			return null;
+		}
+		
 		// read & close
 		byte[] data = new byte[s.Length];
 		s.Read(data, 0, data.Length);
@@ -296,11 +296,10 @@ public class ZigInput : MonoBehaviour {
 		result.LoadImage(data);
 		return result;
 	}
-
-    void OnGUI()
-    {
-        GUI.DrawTexture(new Rect(10, Screen.height - 10 - watermarkTexture.height, watermarkTexture.width, watermarkTexture.height), watermarkTexture);
-    }
+	
+	void OnGUI() {
+		GUI.DrawTexture(new Rect(10, Screen.height - 10 - watermarkTexture.height, watermarkTexture.width, watermarkTexture.height), watermarkTexture);
+	}
 	
 	#endif
 		
@@ -392,7 +391,7 @@ public class ZigInput : MonoBehaviour {
 
 	void Awake() {
 		#if WATERMARK_OMERCY
-        watermarkTexture = LoadTextureFromResource("ZDK.wm.png");
+		watermarkTexture = LoadTextureFromResource("ZDK.wm.png");
 		#endif
 		
 		// reader factory
